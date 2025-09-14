@@ -11,12 +11,12 @@ set(RGE_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-set(SDL_SHARED OFF)
-set(SDL_STATIC ON)
 
 option(SDL_VENDORED OFF)
 
 if(SDL_VENDORED)
+  set(SDL_SHARED OFF)
+  set(SDL_STATIC ON)
   FetchContent_Declare(
       SDL3
       GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -40,6 +40,7 @@ set(RGE_SOURCE
     src/main.cpp)
 
 add_subdirectory(include/glad)
+add_subdirectory(include/imgui)
 # Add our library
 add_library(RGE_Engine ${RGE_SOURCE} ${RGE_HEADER})
 
@@ -54,6 +55,7 @@ target_link_libraries(
   RGE_Engine 
   glad
   glm
+  imgui
   SDL3::SDL3
   ${OPENGL_LIBRARIES})
 

@@ -1,10 +1,12 @@
+#define IMGUI_IMPL_OPENGL_LOADER_GLAD
+
 #include <iostream>
 #include <string>
 
 #include <main.h>
 
-#include <imgui/backends/imgui_impl_opengl3.h>
-#include <imgui/backends/imgui_impl_sdl3.h>
+#include <imgui/imgui_impl_opengl3.h>
+#include <imgui/imgui_impl_sdl3.h>
 #include <imgui/imgui.h>
 
 #include <SDL3/SDL.h>
@@ -42,6 +44,28 @@ int main(int argc, char *argv[]) {
     std::cout << "Busted context" << std::endl;
     return -1;
   }
+  SDL_GL_MakeCurrent(window, context);
+  SDL_GL_SetSwapInterval(0);
+
+  // Setup Dear ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO();
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+
+  float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+  ImGui::StyleColorsDark();
+  ImGuiStyle& style = ImGui::GetStyle();
+  style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+  style.FontScaleDpi = main_scale;   
+
+  const char* glsl_version = "#version 130";
+  bool show_demo_window = true;
+
+  // Setup Platform/Renderer backends
+  ImGui_ImplSDL3_InitForOpenGL(window, context);
+  ImGui_ImplOpenGL3_Init(glsl_version);
 
   gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
   SDL_GL_SetSwapInterval(0);
@@ -53,14 +77,26 @@ int main(int argc, char *argv[]) {
     SDL_Event e;
 
     while (SDL_PollEvent(&e)) {
+      ImGui_ImplSDL3_ProcessEvent(&e);
       if (e.type == SDL_EVENT_QUIT) {
         done = true;
       }
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplSDL3_NewFrame();
+      ImGui::NewFrame();
+
+      ImGui::ShowDemoWindow(&show_demo_window);
+      ImGui::Render();
       glClearColor(0.2, 0.2, 0.2, 1.0);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
       SDL_GL_SwapWindow(window);
     }
   }
+
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplSDL3_Shutdown();
+  ImGui::DestroyContext();
 
   SDL_GL_DestroyContext(context);
   SDL_DestroyWindow(window);

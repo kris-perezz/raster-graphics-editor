@@ -70,8 +70,6 @@ int main(int, char **) {
       ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
@@ -87,13 +85,6 @@ int main(int, char **) {
       main_scale;  // Set initial font scale. (using io.ConfigDpiScaleFonts=true
                    // makes this unnecessary. We leave both here for
                    // documentation purpose)
-  io.ConfigDpiScaleFonts =
-      true; // [Experimental] Automatically overwrite style.FontScaleDpi in
-            // Begin() when Monitor DPI changes. This will scale fonts but _NOT_
-            // scale sizes/padding for now.
-  io.ConfigDpiScaleViewports =
-      true; // [Experimental] Scale Dear ImGui and Platform Windows when Monitor
-            // DPI changes.
 
   // Setup Platform/Renderer backends
   ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
@@ -188,15 +179,6 @@ int main(int, char **) {
                  clear_color.z * clear_color.w, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-      SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
-      SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
-      ImGui::UpdatePlatformWindows();
-      ImGui::RenderPlatformWindowsDefault();
-      SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
-    }
-
     SDL_GL_SwapWindow(window);
   }
 

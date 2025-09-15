@@ -1,17 +1,10 @@
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 
-#include <iostream>
-#include <string>
-
 #include <main.h>
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_sdl3.h>
-
-#include <SDL3/SDL.h>
-
-#include <glad/gl.h>
 
 // Main code
 int main(int, char **) {
@@ -51,16 +44,15 @@ int main(int, char **) {
     return -1;
   }
 
-  if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress)) {
-    std::fprintf(stderr, "gladLoadGLLoader failed\n");
-    return -1;
-  }
-
   SDL_GL_MakeCurrent(window, gl_context);
   SDL_GL_SetSwapInterval(0); // Enable vsync
   SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
   SDL_ShowWindow(window);
 
+  if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress)) {
+    std::fprintf(stderr, "gladLoadGLLoader failed\n");
+    return -1;
+  }
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -99,6 +91,53 @@ int main(int, char **) {
   ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
+  float vertices[] = {
+      0.5f,  0.5f,  0.0f, 0.8f, 0.2f, 0.2f, 1.0f, // top right
+      0.5f,  -0.5f, 0.0f, 0.2f, 0.8f, 0.2f, 1.0f, // bottom right
+      -0.5f, -0.5f, 0.0f, 0.2f, 0.2f, 0.8f, 1.0f, // bottom left
+      -0.5f, 0.5f,  0.0f, 0.8f, 0.8f, 0.2f, 1.0f  // top left
+  };
+  unsigned int indices[] = {
+      // note that we start from 0!
+      0, 1, 3, // first triangle
+      1, 2, 3  // second triangle
+  };
+
+  unsigned int VAO;
+  glGenVertexArrays(1, &VAO);
+
+  unsigned int VBO;
+  glGenBuffers(1, &VBO);
+
+  unsigned int EBO;
+  glGenBuffers(1, &EBO);
+
+  // 1. bind Vertex Array Object
+  glBindVertexArray(VAO);
+  // 2. copy our vertices array in a vertex buffer for OpenGL to use
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  // 3. copy our index array in a element buffer for OpenGL to use
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
+  // 4. then set the vertex attributes pointers
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)0);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float),
+                        (void *)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
+  const char *base = SDL_GetBasePath();
+  std::string vPath = std::string(base) + "data/basic.vert";
+  std::string fPath = std::string(base) + "data/basic.frag";
+
+  auto shader = std::make_shared<Shader>(vPath.c_str(), fPath.c_str());
+
+  glBindVertexArray(VAO);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  glBindVertexArray(0);
+
   // Our state
   bool show_demo_window = true;
   bool show_another_window = false;
@@ -130,36 +169,93 @@ int main(int, char **) {
     ImGui::NewFrame();
 
     {
+      ImGui::Begin("Canvas");
+
+      if (ImGui::IsMousePosValid())
+        ImGui::Text("Mouse pos: (%g, %g)", io.MousePos.x, io.MousePos.y);
+      else
+        ImGui::Text("Mouse pos: <INVALID>");
+      ImGui::Text("Mouse delta: (%g, %g)", io.MouseDelta.x, io.MouseDelta.y);
+      ImGui::Text("Mouse down:");
+      for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++)
+        if (ImGui::IsMouseDown(i)) {
+          ImGui::SameLine();
+          ImGui::Text("b%d (%.02f secs)", i, io.MouseDownDuration[i]);
+        }
+      ImGui::Text("Mouse wheel: %.1f", io.MouseWheel);
+      ImGui::Text("Mouse clicked count:");
+      for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++)
+        if (io.MouseClickedCount[i] > 0) {
+          ImGui::SameLine();
+          ImGui::Text("b%d: %d", i, io.MouseClickedCount[i]);
+        }
+
+      // We iterate both legacy native range and named ImGuiKey ranges. This is
+      // a little unusual/odd but this allows displaying the data for old/new
+      // backends. User code should never have to go through such hoops! You can
+      // generally iterate between ImGuiKey_NamedKey_BEGIN and
+      // ImGuiKey_NamedKey_END.
+      struct funcs {
+        static bool IsLegacyNativeDupe(ImGuiKey) { return false; }
+      };
+      ImGuiKey start_key = ImGuiKey_NamedKey_BEGIN;
+      ImGui::Text("Keys down:");
+      for (ImGuiKey key = start_key; key < ImGuiKey_NamedKey_END;
+           key = (ImGuiKey)(key + 1)) {
+        if (funcs::IsLegacyNativeDupe(key) || !ImGui::IsKeyDown(key))
+          continue;
+        ImGui::SameLine();
+        ImGui::Text((key < ImGuiKey_NamedKey_BEGIN) ? "\"%s\"" : "\"%s\" %d",
+                    ImGui::GetKeyName(key), key);
+      }
+      ImGui::Text("Keys mods: %s%s%s%s", io.KeyCtrl ? "CTRL " : "",
+                  io.KeyShift ? "SHIFT " : "", io.KeyAlt ? "ALT " : "",
+                  io.KeySuper ? "SUPER " : "");
+
+      ImGui::Text("io.WantCaptureMouse: %d", io.WantCaptureMouse);
+      ImGui::Text("io.WantCaptureMouseUnlessPopupClose: %d",
+                  io.WantCaptureMouseUnlessPopupClose);
+      ImGui::Text("io.WantCaptureKeyboard: %d", io.WantCaptureKeyboard);
+      ImGui::Text("io.WantTextInput: %d", io.WantTextInput);
+      ImGui::Text("io.WantSetMousePos: %d", io.WantSetMousePos);
+      ImGui::Text("io.NavActive: %d, io.NavVisible: %d", io.NavActive,
+                  io.NavVisible);
+      ImGui::End();
+    }
+
+    {
       static float f = 0.0f;
       static int counter = 0;
 
-      ImGui::Begin("Raster Graphics Editor"); // Create a window called Raster Graphics Editor
+      ImGui::Begin("Raster Graphics Editor"); // Create a window called Raster
+      // Graphics Editor
 
-      ImGui::Text("This is some useful text."); // Display some text (you can
-                                                // use a format strings too)
+      ImGui::Text("This is some useful text.");
 
-      ImGui::SliderFloat("float", &f, 0.0f,
-                         1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
       ImGui::ColorEdit3(
           "clear color",
-          (float *)&clear_color);  // Edit 3 floats representing a color
+          (float *)&clear_color); // Edit 3 floats representing a color
 
-      if (ImGui::Button("Button")) {counter++;}
+      if (ImGui::Button("Button")) {
+        counter++;
+      }
       ImGui::SameLine();
       ImGui::Text("counter = %d", counter);
 
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                   1000.0f / io.Framerate, io.Framerate);
-      
-      static ImVec4 color = ImVec4(114.0f / 255.0f, 144.0f / 255.0f, 154.0f / 255.0f, 200.0f / 255.0f);
+
+      static ImVec4 color = ImVec4(114.0f / 255.0f, 144.0f / 255.0f,
+                                   154.0f / 255.0f, 200.0f / 255.0f);
       static ImGuiColorEditFlags base_flags = ImGuiColorEditFlags_None;
 
-      ImGui::ColorEdit3("MyColor##1", (float*)&color, base_flags);
-      ImGui::ColorEdit4("MyColor##3", (float*)&color, ImGuiColorEditFlags_DisplayRGB | base_flags);
-      ImGui::ColorPicker4("##picker", (float*)&color, base_flags | ImGuiColorEditFlags_DisplayRGB );
+      ImGui::ColorEdit3("MyColor##1", (float *)&color, base_flags);
+      ImGui::ColorEdit4("MyColor##3", (float *)&color,
+                        ImGuiColorEditFlags_DisplayRGB | base_flags);
+      ImGui::ColorPicker4("##picker", (float *)&color,
+                          base_flags | ImGuiColorEditFlags_DisplayRGB);
       ImGui::End();
     }
-    
 
     // Rendering
     ImGui::Render();
@@ -167,6 +263,12 @@ int main(int, char **) {
     glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w,
                  clear_color.z * clear_color.w, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    shader->bind();
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -187,6 +289,7 @@ int main(int, char **) {
   ImGui_ImplSDL3_Shutdown();
   ImGui::DestroyContext();
 
+  shader.reset();
   SDL_GL_DestroyContext(gl_context);
   SDL_DestroyWindow(window);
   SDL_Quit();

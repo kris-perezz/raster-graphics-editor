@@ -36,8 +36,9 @@ set(RGE_HEADER
     src/main.h)
 
 # Set our source files
-set(RGE_SOURCE
-    src/main.cpp)
+set(RGE_SOURCE)
+
+
 
 add_subdirectory(include/glad)
 add_subdirectory(include/imgui)
@@ -62,3 +63,12 @@ target_link_libraries(
 add_executable(RGE src/main.cpp)
 
 target_link_libraries(RGE PRIVATE RGE_Engine)
+
+set(RUN_DATA_DIR ${CMAKE_BINARY_DIR}/data)
+file(MAKE_DIRECTORY "${RUN_DATA_DIR}")
+
+execute_process(COMMAND ${CMAKE_COMMAND} -E rm -rf "${RUN_DATA_DIR}")
+execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                        "${CMAKE_SOURCE_DIR}/data" "${RUN_DATA_DIR}")
+
+target_include_directories(RGE_Engine PUBLIC "${RUN_DATA_DIR}")

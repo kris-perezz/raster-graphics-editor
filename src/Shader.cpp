@@ -26,10 +26,6 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath) {
     vertexCode = vShaderStream.str();
     fragmentCode = fShaderStream.str();
 
-    // ZEN_LOG_INFO("{}", vertexCode);
-    // ZEN_LOG_INFO("{}", fragmentCode);
-    // ZEN_LOG_INFO("{}", vertexPath);
-    // ZEN_LOG_INFO("{}", fragmentPath);
   } catch (std::ifstream::failure e) {
     throw std::runtime_error("shader file read failed");
   }
@@ -128,15 +124,18 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath) {
   glDetachShader(program, fragmentShader);
 }
 
-Shader::~Shader() {
-  glDeleteProgram(m_rendererID);
-}
+Shader::~Shader() { glDeleteProgram(m_rendererID); }
 
-void Shader::bind() const {
-  // ZEN_LOG_INFO("Shader binded");
-  glUseProgram(m_rendererID);
-}
+void Shader::bind() const { glUseProgram(m_rendererID); }
 
-void Shader::unBind() const {
-  glUseProgram(0);
+void Shader::unBind() const { glUseProgram(0); }
+
+void Shader::setBool(const std::string &name, bool value) const {
+  glUniform1i(glGetUniformLocation(m_rendererID, name.c_str()), (int)value);
+}
+void Shader::setInt(const std::string &name, int value) const {
+  glUniform1i(glGetUniformLocation(m_rendererID, name.c_str()), value);
+}
+void Shader::setFloat(const std::string &name, float value) const {
+  glUniform1f(glGetUniformLocation(m_rendererID, name.c_str()), value);
 }

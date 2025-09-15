@@ -15,14 +15,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 option(SDL_VENDORED OFF)
 
 if(SDL_VENDORED)
-  set(SDL_SHARED OFF)
-  set(SDL_STATIC ON)
+  
   FetchContent_Declare(
       SDL3
       GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
       GIT_TAG origin/main
       OVERRIDE_FIND_PACKAGE
   )
+  set(SDL_SHARED OFF)
+  set(SDL_STATIC ON)
   FetchContent_MakeAvailable(SDL3)
 
 else()
@@ -33,10 +34,12 @@ find_package(OpenGL REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
 set(RGE_HEADER 
-    src/main.h)
+    src/main.h
+    src/Shader.h)
 
 # Set our source files
-set(RGE_SOURCE)
+set(RGE_SOURCE
+    src/Shader.cpp)
 
 
 

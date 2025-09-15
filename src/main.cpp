@@ -78,6 +78,9 @@ int main(int, char **) {
   auto computeShader = std::make_shared<ComputeShader>(cPath.c_str());
 
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+  ImVec4 brushColour = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+  ImVec4 clearColour = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+  bool clear = true;
 
   unsigned int texture;
   const ImVec2 canvasSize(512, 512);
@@ -115,39 +118,9 @@ int main(int, char **) {
     ImGui::NewFrame();
 
     {
-      const ImVec2 windowSize(720, 720);
-      ImGui::SetNextWindowSize(canvasSize, ImGuiCond_Once);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-
-      ImGui::Begin("Canvas", nullptr,
-                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
-                       ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
-                       ImGuiWindowFlags_NoMove);
-
-      ImVec2 mousePosition(-1, -1);
-      if (io.WantCaptureMouse) {
-        mousePosition.x = ImGui::GetMousePos().x - ImGui::GetWindowPos().x;
-        mousePosition.y = ImGui::GetMousePos().y - ImGui::GetWindowPos().y;
-      }
-
-      glUniform2f(0, mousePosition.x, mousePosition.y);
-
-      if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-        computeShader->bind();
-
-        glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-
-        glDispatchCompute(canvasSize.x, canvasSize.y, 1);
-        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-      }
-
-      ImGui::Image((void *)(intptr_t)texture, canvasSize);
-      ImGui::End();
-      ImGui::PopStyleVar();
-    }
-
-    {
       ImGui::Begin("Debug");
+      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate,
+                  io.Framerate);
 
       if (ImGui::IsMousePosValid())
         ImGui::Text("Mouse pos: (%g, %g)", io.MousePos.x, io.MousePos.y);
@@ -176,30 +149,58 @@ int main(int, char **) {
       ImGui::Begin("Raster Graphics Editor"); // Create a window called Raster
       // Graphics Editor
 
-      ImGui::Text("This is some useful text.");
-
       ImGui::ColorEdit3("clear color",
                         (float *)&clear_color); // Edit 3 floats representing a color
-
-      if (ImGui::Button("Button")) {
-        counter++;
-      }
-      ImGui::SameLine();
-      ImGui::Text("counter = %d", counter);
-
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate,
-                  io.Framerate);
 
       static ImVec4 color =
           ImVec4(114.0f / 255.0f, 144.0f / 255.0f, 154.0f / 255.0f, 200.0f / 255.0f);
       static ImGuiColorEditFlags base_flags = ImGuiColorEditFlags_None;
 
-      ImGui::ColorEdit3("MyColor##1", (float *)&color, base_flags);
-      ImGui::ColorEdit4("MyColor##3", (float *)&color, ImGuiColorEditFlags_DisplayRGB | base_flags);
-      ImGui::ColorPicker4("##picker", (float *)&color, base_flags | ImGuiColorEditFlags_DisplayRGB);
+      ImGui::ColorEdit3("Canvas Clear  Colour", (float *)&clearColour);
+
+      ImGui::ColorPicker4("##picker", (float *)&brushColour,
+                          base_flags | ImGuiColorEditFlags_DisplayRGB);
+
+      if (ImGui::Button("Clear Canvas", ImVec2(200, 60))) {
+        clear = true;
+      }
       ImGui::End();
     }
+    {
+      ImGui::SetNextWindowSize(canvasSize, ImGuiCond_Once);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
+      ImGui::Begin("Canvas", nullptr,
+                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
+                       ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
+                       ImGuiWindowFlags_NoMove);
+
+      ImVec2 mousePosition;
+      if (io.WantCaptureMouse) {
+        mousePosition.x = ImGui::GetMousePos().x - ImGui::GetWindowPos().x;
+        mousePosition.y = ImGui::GetMousePos().y - ImGui::GetWindowPos().y;
+      }
+
+      computeShader->bind();
+      glUniform2f(0, mousePosition.x, mousePosition.y);
+      glUniform4f(1, brushColour.x, brushColour.y, brushColour.z, brushColour.w);
+      glUniform1i(2, clear ? 1 : 0);
+      glUniform4f(3, clearColour.x, clearColour.y, clearColour.z, clearColour.w);
+
+      if (clear || ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+        computeShader->bind();
+
+        glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+
+        glDispatchCompute(canvasSize.x, canvasSize.y, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        clear = false;
+      }
+
+      ImGui::Image((void *)(intptr_t)texture, canvasSize);
+      ImGui::End();
+      ImGui::PopStyleVar();
+    }
     // Rendering
     ImGui::Render();
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);

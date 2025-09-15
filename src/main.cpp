@@ -6,33 +6,28 @@
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_sdl3.h>
 
-// Main code
 int main(int, char **) {
-  // Setup SDL
-  // [If using SDL_MAIN_USE_CALLBACKS: all code below until the main loop starts
-  // would likely be your SDL_AppInit() function]
-  if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
+
+  if (!SDL_Init(SDL_INIT_VIDEO)) {
     printf("Error: SDL_Init(): %s\n", SDL_GetError());
     return -1;
   }
 
-  // GL 3.0 + GLSL 130
-  const char *glsl_version = "#version 130";
+  // GL 4.3 + GLSL 130
+  const char *glsl_version = "#version 430";
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
   // Create window with graphics context
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
-  SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE |
-                                 SDL_WINDOW_HIDDEN |
-                                 SDL_WINDOW_HIGH_PIXEL_DENSITY;
-  SDL_Window *window = SDL_CreateWindow("Dear ImGui SDL3+OpenGL3 example",
-                                        (int)(1280 * main_scale),
+  SDL_WindowFlags window_flags =
+      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+  SDL_Window *window = SDL_CreateWindow("Dear ImGui SDL3+OpenGL3 example", (int)(1280 * main_scale),
                                         (int)(720 * main_scale), window_flags);
   if (window == nullptr) {
     printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
@@ -45,6 +40,7 @@ int main(int, char **) {
   }
 
   SDL_GL_MakeCurrent(window, gl_context);
+
   SDL_GL_SetSwapInterval(0); // Enable vsync
   SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
   SDL_ShowWindow(window);
@@ -58,34 +54,19 @@ int main(int, char **) {
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   (void)io;
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
   io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
-  // ImGui::StyleColorsLight();
 
   // Setup scaling
   ImGuiStyle &style = ImGui::GetStyle();
-  style.ScaleAllSizes(
-      main_scale); // Bake a fixed style scale. (until we have a solution for
-                   // dynamic style scaling, changing this requires resetting
-                   // Style + calling this again)
-  style.FontScaleDpi =
-      main_scale;  // Set initial font scale. (using io.ConfigDpiScaleFonts=true
-                   // makes this unnecessary. We leave both here for
-                   // documentation purpose)
-  io.ConfigDpiScaleFonts =
-      true; // [Experimental] Automatically overwrite style.FontScaleDpi in
-            // Begin() when Monitor DPI changes. This will scale fonts but _NOT_
-            // scale sizes/padding for now.
-  io.ConfigDpiScaleViewports =
-      true; // [Experimental] Scale Dear ImGui and Platform Windows when Monitor
-            // DPI changes.
+  style.ScaleAllSizes(main_scale);
+  style.FontScaleDpi = main_scale;
+  io.ConfigDpiScaleFonts = true;
+  io.ConfigDpiScaleViewports = true;
 
   // Setup Platform/Renderer backends
   ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
@@ -119,13 +100,11 @@ int main(int, char **) {
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
   // 3. copy our index array in a element buffer for OpenGL to use
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-               GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
   // 4. then set the vertex attributes pointers
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
   const char *base = SDL_GetBasePath();
@@ -138,7 +117,6 @@ int main(int, char **) {
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 
-  // Our state
   bool show_demo_window = true;
   bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -156,8 +134,6 @@ int main(int, char **) {
         done = true;
     }
 
-    // [If using SDL_MAIN_USE_CALLBACKS: all code below would likely be your
-    // SDL_AppIterate() function]
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) {
       SDL_Delay(10);
       continue;
@@ -200,26 +176,22 @@ int main(int, char **) {
       };
       ImGuiKey start_key = ImGuiKey_NamedKey_BEGIN;
       ImGui::Text("Keys down:");
-      for (ImGuiKey key = start_key; key < ImGuiKey_NamedKey_END;
-           key = (ImGuiKey)(key + 1)) {
+      for (ImGuiKey key = start_key; key < ImGuiKey_NamedKey_END; key = (ImGuiKey)(key + 1)) {
         if (funcs::IsLegacyNativeDupe(key) || !ImGui::IsKeyDown(key))
           continue;
         ImGui::SameLine();
         ImGui::Text((key < ImGuiKey_NamedKey_BEGIN) ? "\"%s\"" : "\"%s\" %d",
                     ImGui::GetKeyName(key), key);
       }
-      ImGui::Text("Keys mods: %s%s%s%s", io.KeyCtrl ? "CTRL " : "",
-                  io.KeyShift ? "SHIFT " : "", io.KeyAlt ? "ALT " : "",
-                  io.KeySuper ? "SUPER " : "");
+      ImGui::Text("Keys mods: %s%s%s%s", io.KeyCtrl ? "CTRL " : "", io.KeyShift ? "SHIFT " : "",
+                  io.KeyAlt ? "ALT " : "", io.KeySuper ? "SUPER " : "");
 
       ImGui::Text("io.WantCaptureMouse: %d", io.WantCaptureMouse);
-      ImGui::Text("io.WantCaptureMouseUnlessPopupClose: %d",
-                  io.WantCaptureMouseUnlessPopupClose);
+      ImGui::Text("io.WantCaptureMouseUnlessPopupClose: %d", io.WantCaptureMouseUnlessPopupClose);
       ImGui::Text("io.WantCaptureKeyboard: %d", io.WantCaptureKeyboard);
       ImGui::Text("io.WantTextInput: %d", io.WantTextInput);
       ImGui::Text("io.WantSetMousePos: %d", io.WantSetMousePos);
-      ImGui::Text("io.NavActive: %d, io.NavVisible: %d", io.NavActive,
-                  io.NavVisible);
+      ImGui::Text("io.NavActive: %d, io.NavVisible: %d", io.NavActive, io.NavVisible);
       ImGui::End();
     }
 
@@ -232,9 +204,8 @@ int main(int, char **) {
 
       ImGui::Text("This is some useful text.");
 
-      ImGui::ColorEdit3(
-          "clear color",
-          (float *)&clear_color); // Edit 3 floats representing a color
+      ImGui::ColorEdit3("clear color",
+                        (float *)&clear_color); // Edit 3 floats representing a color
 
       if (ImGui::Button("Button")) {
         counter++;
@@ -242,18 +213,16 @@ int main(int, char **) {
       ImGui::SameLine();
       ImGui::Text("counter = %d", counter);
 
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                  1000.0f / io.Framerate, io.Framerate);
+      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate,
+                  io.Framerate);
 
-      static ImVec4 color = ImVec4(114.0f / 255.0f, 144.0f / 255.0f,
-                                   154.0f / 255.0f, 200.0f / 255.0f);
+      static ImVec4 color =
+          ImVec4(114.0f / 255.0f, 144.0f / 255.0f, 154.0f / 255.0f, 200.0f / 255.0f);
       static ImGuiColorEditFlags base_flags = ImGuiColorEditFlags_None;
 
       ImGui::ColorEdit3("MyColor##1", (float *)&color, base_flags);
-      ImGui::ColorEdit4("MyColor##3", (float *)&color,
-                        ImGuiColorEditFlags_DisplayRGB | base_flags);
-      ImGui::ColorPicker4("##picker", (float *)&color,
-                          base_flags | ImGuiColorEditFlags_DisplayRGB);
+      ImGui::ColorEdit4("MyColor##3", (float *)&color, ImGuiColorEditFlags_DisplayRGB | base_flags);
+      ImGui::ColorPicker4("##picker", (float *)&color, base_flags | ImGuiColorEditFlags_DisplayRGB);
       ImGui::End();
     }
 
@@ -283,8 +252,7 @@ int main(int, char **) {
   }
 
   // Cleanup
-  // [If using SDL_MAIN_USE_CALLBACKS: all code below would likely be your
-  // SDL_AppQuit() function]
+
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplSDL3_Shutdown();
   ImGui::DestroyContext();

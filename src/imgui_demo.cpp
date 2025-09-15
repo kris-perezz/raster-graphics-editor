@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-#include <main.h>
+#include <src/main.h>
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>

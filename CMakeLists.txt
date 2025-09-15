@@ -64,8 +64,10 @@ target_link_libraries(
   ${OPENGL_LIBRARIES})
 
 add_executable(RGE src/main.cpp)
+add_executable(DEMO src/imgui_demo.cpp)
 
 target_link_libraries(RGE PRIVATE RGE_Engine)
+target_link_libraries(DEMO PRIVATE RGE_Engine)
 
 set(RUN_DATA_DIR ${CMAKE_BINARY_DIR}/data)
 file(MAKE_DIRECTORY "${RUN_DATA_DIR}")

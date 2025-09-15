@@ -35,17 +35,17 @@ find_package(glm CONFIG REQUIRED)
 
 set(RGE_HEADER 
     src/main.h
-    src/Shader.h)
+    src/Shader.h
+    src/ComputeShader.h)
 
-# Set our source files
+
 set(RGE_SOURCE
-    src/Shader.cpp)
-
-
+    src/Shader.cpp
+    src/ComputeShader.cpp)
 
 add_subdirectory(include/glad)
 add_subdirectory(include/imgui)
-# Add our library
+
 add_library(RGE_Engine ${RGE_SOURCE} ${RGE_HEADER})
 
 target_precompile_headers(RGE_Engine PRIVATE src/RGE_pch.h)

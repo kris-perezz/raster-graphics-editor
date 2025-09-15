@@ -1,12 +1,13 @@
-#version 330 core
+#version 430 core
 
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec4 fragColour;
 
-in vec3 v_position;
-in vec4 v_color;
+in vec2 v_texCoords;
+
+uniform sampler2D tex;
 
 void main()
 {
-    color = vec4(v_position *0.5 + 0.5, 1.0);
-    color = v_color;
+  vec3 texColour = texture(tex, v_texCoords).rgb;
+  fragColour = vec4(texColour, 1.0);
 }

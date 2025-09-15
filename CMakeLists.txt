@@ -48,6 +48,8 @@ add_subdirectory(include/imgui)
 # Add our library
 add_library(RGE_Engine ${RGE_SOURCE} ${RGE_HEADER})
 
+target_precompile_headers(RGE_Engine PRIVATE src/RGE_pch.h)
+
 target_include_directories(
   RGE_Engine 
   PUBLIC ${RGE_ROOT_PATH}

@@ -1,16 +1,6 @@
-#include <iostream>
-#include <string>
+#pragma once
 
-#include <memory>
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <vector>
-
-
-#include <SDL3/SDL.h>
-
-#include <glad/gl.h>
+#include <src/RGE_pch.h>
 
 
 

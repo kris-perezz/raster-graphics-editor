@@ -72,21 +72,15 @@ int main(int, char **) {
   ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
-  float vertices[] = {
-      -1, -1, 0, 0, 0,
-      1, -1, 0, 1, 0,
-      -1, 1, 0, 0, 1,
-      1, 1, 0, 1, 1
-  };
-  unsigned int indices[] = {
-      // note that we start from 0!
-      0, 1, 3, // first triangle
-      1, 2, 3  // second triangle
-  };
+  const char *base = SDL_GetBasePath();
+  std::string cPath = std::string(base) + "data/compute.glsl";
 
-  // texture size
-  const unsigned int TEXTURE_WIDTH = 512, TEXTURE_HEIGHT = 512;
+  auto computeShader = std::make_shared<ComputeShader>(cPath.c_str());
+
+  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
   unsigned int texture;
+  const ImVec2 canvasSize(512, 512);
 
   glGenTextures(1, &texture);
   glActiveTexture(GL_TEXTURE0);
@@ -95,46 +89,8 @@ int main(int, char **) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGBA, GL_FLOAT,
-               NULL);
-
-  glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-
-  unsigned int VAO;
-  glGenVertexArrays(1, &VAO);
-
-  unsigned int VBO;
-  glGenBuffers(1, &VBO);
-
-  unsigned int EBO;
-  glGenBuffers(1, &EBO);
-
-  // 1. bind Vertex Array Object
-  glBindVertexArray(VAO);
-  // 2. copy our vertices array in a vertex buffer for OpenGL to use
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-  // 3. copy our index array in a element buffer for OpenGL to use
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-  // 4. then set the vertex attributes pointers
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
-  const char *base = SDL_GetBasePath();
-  std::string vPath = std::string(base) + "data/basic.vert";
-  std::string fPath = std::string(base) + "data/basic.frag";
-  std::string cPath = std::string(base) + "data/compute.glsl";
-
-  auto shader = std::make_shared<Shader>(vPath.c_str(), fPath.c_str());
-  auto computeShader = std::make_shared<ComputeShader>(cPath.c_str());
-
-  bool show_demo_window = true;
-  bool show_another_window = false;
-  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, canvasSize.x, canvasSize.y, 0, GL_RGBA, GL_FLOAT,
+               nullptr);
   // Main loop
   bool done = false;
   while (!done) {
@@ -159,7 +115,39 @@ int main(int, char **) {
     ImGui::NewFrame();
 
     {
-      ImGui::Begin("Canvas");
+      const ImVec2 windowSize(720, 720);
+      ImGui::SetNextWindowSize(canvasSize, ImGuiCond_Once);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+
+      ImGui::Begin("Canvas", nullptr,
+                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
+                       ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
+                       ImGuiWindowFlags_NoMove);
+
+      ImVec2 mousePosition(-1, -1);
+      if (io.WantCaptureMouse) {
+        mousePosition.x = ImGui::GetMousePos().x - ImGui::GetWindowPos().x;
+        mousePosition.y = ImGui::GetMousePos().y - ImGui::GetWindowPos().y;
+      }
+
+      glUniform2f(0, mousePosition.x, mousePosition.y);
+
+      if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+        computeShader->bind();
+
+        glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+
+        glDispatchCompute(canvasSize.x, canvasSize.y, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+      }
+
+      ImGui::Image((void *)(intptr_t)texture, canvasSize);
+      ImGui::End();
+      ImGui::PopStyleVar();
+    }
+
+    {
+      ImGui::Begin("Debug");
 
       if (ImGui::IsMousePosValid())
         ImGui::Text("Mouse pos: (%g, %g)", io.MousePos.x, io.MousePos.y);
@@ -173,33 +161,6 @@ int main(int, char **) {
           ImGui::Text("b%d (%.02f secs)", i, io.MouseDownDuration[i]);
         }
       ImGui::Text("Mouse wheel: %.1f", io.MouseWheel);
-      ImGui::Text("Mouse clicked count:");
-      for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++)
-        if (io.MouseClickedCount[i] > 0) {
-          ImGui::SameLine();
-          ImGui::Text("b%d: %d", i, io.MouseClickedCount[i]);
-        }
-
-      // We iterate both legacy native range and named ImGuiKey ranges. This is
-      // a little unusual/odd but this allows displaying the data for old/new
-      // backends. User code should never have to go through such hoops! You can
-      // generally iterate between ImGuiKey_NamedKey_BEGIN and
-      // ImGuiKey_NamedKey_END.
-      struct funcs {
-        static bool IsLegacyNativeDupe(ImGuiKey) { return false; }
-      };
-      ImGuiKey start_key = ImGuiKey_NamedKey_BEGIN;
-      ImGui::Text("Keys down:");
-      for (ImGuiKey key = start_key; key < ImGuiKey_NamedKey_END; key = (ImGuiKey)(key + 1)) {
-        if (funcs::IsLegacyNativeDupe(key) || !ImGui::IsKeyDown(key))
-          continue;
-        ImGui::SameLine();
-        ImGui::Text((key < ImGuiKey_NamedKey_BEGIN) ? "\"%s\"" : "\"%s\" %d",
-                    ImGui::GetKeyName(key), key);
-      }
-      ImGui::Text("Keys mods: %s%s%s%s", io.KeyCtrl ? "CTRL " : "", io.KeyShift ? "SHIFT " : "",
-                  io.KeyAlt ? "ALT " : "", io.KeySuper ? "SUPER " : "");
-
       ImGui::Text("io.WantCaptureMouse: %d", io.WantCaptureMouse);
       ImGui::Text("io.WantCaptureMouseUnlessPopupClose: %d", io.WantCaptureMouseUnlessPopupClose);
       ImGui::Text("io.WantCaptureKeyboard: %d", io.WantCaptureKeyboard);
@@ -208,7 +169,6 @@ int main(int, char **) {
       ImGui::Text("io.NavActive: %d, io.NavVisible: %d", io.NavActive, io.NavVisible);
       ImGui::End();
     }
-
     {
       static float f = 0.0f;
       static int counter = 0;
@@ -247,19 +207,6 @@ int main(int, char **) {
                  clear_color.z * clear_color.w, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    computeShader->bind();
-    glDispatchCompute((unsigned int)TEXTURE_WIDTH, (unsigned int)TEXTURE_HEIGHT, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-    shader->bind();
-    shader->setInt("tex", 0);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -279,7 +226,7 @@ int main(int, char **) {
   ImGui_ImplSDL3_Shutdown();
   ImGui::DestroyContext();
 
-  shader.reset();
+  computeShader.reset();
   SDL_GL_DestroyContext(gl_context);
   SDL_DestroyWindow(window);
   SDL_Quit();

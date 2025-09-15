@@ -13,7 +13,7 @@ int main(int, char **) {
     return -1;
   }
 
-  // GL 4.3 + GLSL 130
+  // GL 4.3 + GLSL 430
   const char *glsl_version = "#version 430";
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -73,16 +73,32 @@ int main(int, char **) {
   ImGui_ImplOpenGL3_Init(glsl_version);
 
   float vertices[] = {
-      0.5f,  0.5f,  0.0f, 0.8f, 0.2f, 0.2f, 1.0f, // top right
-      0.5f,  -0.5f, 0.0f, 0.2f, 0.8f, 0.2f, 1.0f, // bottom right
-      -0.5f, -0.5f, 0.0f, 0.2f, 0.2f, 0.8f, 1.0f, // bottom left
-      -0.5f, 0.5f,  0.0f, 0.8f, 0.8f, 0.2f, 1.0f  // top left
+      -1, -1, 0, 0, 0,
+      1, -1, 0, 1, 0,
+      -1, 1, 0, 0, 1,
+      1, 1, 0, 1, 1
   };
   unsigned int indices[] = {
       // note that we start from 0!
       0, 1, 3, // first triangle
       1, 2, 3  // second triangle
   };
+
+  // texture size
+  const unsigned int TEXTURE_WIDTH = 512, TEXTURE_HEIGHT = 512;
+  unsigned int texture;
+
+  glGenTextures(1, &texture);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGBA, GL_FLOAT,
+               NULL);
+
+  glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
   unsigned int VAO;
   glGenVertexArrays(1, &VAO);
@@ -102,20 +118,18 @@ int main(int, char **) {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
   // 4. then set the vertex attributes pointers
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)(3 * sizeof(float)));
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
   const char *base = SDL_GetBasePath();
   std::string vPath = std::string(base) + "data/basic.vert";
   std::string fPath = std::string(base) + "data/basic.frag";
+  std::string cPath = std::string(base) + "data/compute.glsl";
 
   auto shader = std::make_shared<Shader>(vPath.c_str(), fPath.c_str());
-
-  glBindVertexArray(VAO);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-  glBindVertexArray(0);
+  auto computeShader = std::make_shared<ComputeShader>(cPath.c_str());
 
   bool show_demo_window = true;
   bool show_another_window = false;
@@ -233,10 +247,18 @@ int main(int, char **) {
                  clear_color.z * clear_color.w, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    computeShader->bind();
+    glDispatchCompute((unsigned int)TEXTURE_WIDTH, (unsigned int)TEXTURE_HEIGHT, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
     shader->bind();
+    shader->setInt("tex", 0);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

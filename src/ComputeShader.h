@@ -2,6 +2,7 @@
 
 #include <src/RGE_pch.h>
 
+namespace RGE {
 class ComputeShader {
 public:
   ComputeShader(const char *computePath);
@@ -17,3 +18,4 @@ public:
 private:
   uint32_t m_rendererID;
 };
+}

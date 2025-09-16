@@ -1,5 +1,6 @@
 #include <src/ComputeShader.h>
 
+namespace RGE {
 ComputeShader::ComputeShader(const char *computePath) {
   std::string computeCode;
   std::ifstream cShaderFile;
@@ -80,4 +81,5 @@ void ComputeShader::setInt(const std::string &name, int value) const {
 }
 void ComputeShader::setFloat(const std::string &name, float value) const {
   glUniform1f(glGetUniformLocation(m_rendererID, name.c_str()), value);
+}
 }

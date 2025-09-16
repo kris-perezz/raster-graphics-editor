@@ -36,12 +36,16 @@ find_package(glm CONFIG REQUIRED)
 set(RGE_HEADER 
     src/main.h
     src/Shader.h
-    src/ComputeShader.h)
+    src/ComputeShader.h
+    src/Application.h
+    src/GUI.h)
 
 
 set(RGE_SOURCE
     src/Shader.cpp
-    src/ComputeShader.cpp)
+    src/ComputeShader.cpp
+    src/Application.cpp
+    src/GUI.cpp)
 
 add_subdirectory(include/glad)
 add_subdirectory(include/imgui)

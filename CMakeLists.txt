@@ -38,14 +38,17 @@ set(RGE_HEADER
     src/Shader.h
     src/ComputeShader.h
     src/Application.h
-    src/GUI.h)
+    src/GUI.h
+    src/Renderer.h
+    src/CanvasState.h)
 
 
 set(RGE_SOURCE
     src/Shader.cpp
     src/ComputeShader.cpp
     src/Application.cpp
-    src/GUI.cpp)
+    src/GUI.cpp
+    src/Renderer.cpp)
 
 add_subdirectory(include/glad)
 add_subdirectory(include/imgui)

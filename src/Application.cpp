@@ -1,0 +1,106 @@
+#include <src/Application.h>
+
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_opengl3.h>
+#include <imgui/imgui_impl_sdl3.h>
+
+namespace RGE {
+Application::Application(const std::string &Application) {
+  if (!SDL_Init(SDL_INIT_VIDEO)) {
+    throw std::runtime_error(std::string("Error: SDL_Init(): ") + SDL_GetError());
+  }
+
+  // GL 4.3 + GLSL 430
+  m_glslVersion = "#version 430";
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
+  // Create m_window with graphics context
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+  float m_mainScale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+
+  SDL_WindowFlags window_flags =
+      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+
+  m_window = SDL_CreateWindow("Dear ImGui SDL3+OpenGL3 example", (int)(1280 * m_mainScale),
+                              (int)(720 * m_mainScale), window_flags);
+
+  if (m_window == nullptr) {
+    throw std::runtime_error(std::string("Error: SDL_CreateWindow(): ") + SDL_GetError());
+  }
+  m_context = SDL_GL_CreateContext(m_window);
+  if (m_context == nullptr) {
+    throw std::runtime_error(std::string("Error: SDL_GL_CreateContext(): ") + SDL_GetError());
+  }
+
+  SDL_GL_MakeCurrent(m_window, m_context);
+
+  SDL_GL_SetSwapInterval(0); // Enable vsync
+  SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+  SDL_ShowWindow(m_window);
+
+  if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress)) {
+    std::fprintf(stderr, "gladLoadGLLoader failed\n");
+    throw std::runtime_error(std::string("Error: gladLoadGLLoader failed "));
+  }
+
+  const char *base = SDL_GetBasePath();
+  std::string cPath = std::string(base) + "data/compute.glsl";
+  m_computeShader = std::make_shared<ComputeShader>(cPath.c_str());
+
+  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+  ImVec4 brushColour = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+  ImVec4 clearColour = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+  bool clear = true;
+
+  uint32_t texture;
+  const ImVec2 canvasSize(512, 512);
+
+  glGenTextures(1, &texture);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, canvasSize.x, canvasSize.y, 0, GL_RGBA, GL_FLOAT,
+               nullptr);
+
+  m_GUI = std::make_unique<GUI>(m_window, &m_context, m_mainScale, m_glslVersion, m_computeShader, texture);
+}
+Application::~Application() {
+  m_GUI.reset();
+  m_computeShader.reset();
+  SDL_GL_DestroyContext(m_context);
+  SDL_DestroyWindow(m_window);
+  SDL_Quit();
+}
+
+void Application::run() {
+  bool done = false;
+  while (!done) {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      ImGui_ImplSDL3_ProcessEvent(&event);
+      if (event.type == SDL_EVENT_QUIT)
+        done = true;
+      if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
+          event.window.windowID == SDL_GetWindowID(m_window))
+        done = true;
+    }
+
+    if (SDL_GetWindowFlags(m_window) & SDL_WINDOW_MINIMIZED) {
+      SDL_Delay(10);
+      continue;
+    }
+    m_GUI->render();
+
+    SDL_GL_SwapWindow(m_window);
+  }
+}
+} // namespace RGE

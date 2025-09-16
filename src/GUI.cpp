@@ -106,8 +106,15 @@ void GUI::render() {
                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
                      ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
                      ImGuiWindowFlags_NoMove);
+    
+
+    bool onCanvas = ImGui::IsWindowHovered();
+    bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+    
+    bool draw = onCanvas && mouseDown;
 
     ImVec2 mousePosition;
+    
     if (io->WantCaptureMouse) {
       mousePosition.x = ImGui::GetMousePos().x - ImGui::GetWindowPos().x;
       mousePosition.y = ImGui::GetMousePos().y - ImGui::GetWindowPos().y;
@@ -119,7 +126,7 @@ void GUI::render() {
     glUniform1i(2, clear ? 1 : 0);
     glUniform4f(3, clearColour.x, clearColour.y, clearColour.z, clearColour.w);
 
-    if (clear || ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+    if ((clear || draw)) {
       m_computeShader->bind();
 
       glBindImageTexture(0, m_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);

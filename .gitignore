@@ -16,6 +16,7 @@ CMakeUserPresets.json
 *.exe
 *.out
 *.app
+*.zip
 
 # Local
 .cache/
@@ -23,3 +24,4 @@ out/
 build/
 .vscode/
 .clang-format
+_CPack_Packages

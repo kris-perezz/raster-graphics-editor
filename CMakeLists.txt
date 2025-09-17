@@ -106,16 +106,42 @@ else()
   target_include_directories(RGE_Engine PUBLIC "${RUN_DATA_DIR}")
 endif()
 
+# Binaries/libs
 install(TARGETS RGE DEMO RGE_Engine
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-)
+  ARCHIVE DESTINATION lib)
 
+# SDL runtime on Windows
 if(WIN32)
   install(FILES "$<TARGET_FILE:SDL3::SDL3>" DESTINATION bin)
 endif()
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION share/RGE)
+# Assets next to the exe (required by SDL_GetBasePath() + "data/..."):
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION bin)
+
+# CPack config
+set(CPACK_PACKAGE_NAME "RGE")
+set(CPACK_PACKAGE_VENDOR "RGE")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Raster Graphics Editor")
+set(CPACK_RESOURCE_FILE_README  "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+
+# Generators
+# build a zip for all, NSIS installer on Windows if NSIS is installed
+if(WIN32)
+  set(CPACK_GENERATOR "ZIP;NSIS")
+  set(CPACK_NSIS_DISPLAY_NAME "RGE")
+  set(CPACK_NSIS_PACKAGE_NAME "RGE")
+  set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "RGE")
+else()
+  set(CPACK_GENERATOR "TGZ;TXZ;ZIP")
+endif()
+
+# Nice file name: RGE-1.0.0-windows-x86_64.zip, etc.
+set(CPACK_PACKAGE_FILE_NAME
+    "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 
 include(CPack)

@@ -5,9 +5,8 @@
 #include <src/GUI.h>
 
 namespace RGE {
-GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion,
-         const std::shared_ptr<RGE::ComputeShader> computeShader, uint32_t texture)
-    : m_computeShader(computeShader), m_texture(texture) {
+GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion, uint32_t texture)
+    : m_texture(texture) {
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -53,14 +52,13 @@ void GUI::render(CanvasState &state, uint32_t texture) {
   ImGui::SetNextWindowSize(viewport->Size);
   ImGui::SetNextWindowViewport(viewport->ID);
 
-  ImGuiWindowFlags host_window_flags =
-      ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
-      ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+  ImGuiWindowFlags host_window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+                                       ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                                       ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                       ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
   ImGui::Begin("MainDockSpace", nullptr,
-               ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-                   ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+               ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
                    ImGuiWindowFlags_NoNavFocus);
 
   ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
@@ -78,10 +76,8 @@ void GUI::render(CanvasState &state, uint32_t texture) {
 
     ImGuiID dock_main_id = dockspace_id;
     ImGuiID dock_left, dock_right;
-    dock_left =
-        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.25f, nullptr, &dock_main_id);
-    dock_right =
-        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
+    dock_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.25f, nullptr, &dock_main_id);
+    dock_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
 
     ImGui::DockBuilderDockWindow("Canvas", dock_main_id);
     ImGui::DockBuilderDockWindow("Debug", dock_right);
@@ -95,9 +91,8 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
     ImGui::Begin("Canvas", nullptr,
-                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
-                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
-                     ImGuiWindowFlags_NoMove);
+                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
 
     ImGui::Image((void *)(intptr_t)m_texture, canvasSize);
 
@@ -120,8 +115,7 @@ void GUI::render(CanvasState &state, uint32_t texture) {
   {
     // ImGui::SetNextWindowPos(ImVec2(0, 512), ImGuiCond_Once);
     ImGui::Begin("Debug");
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate,
-                io->Framerate);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
 
     if (ImGui::IsMousePosValid())
       ImGui::Text("Mouse pos: (%g, %g)", io->MousePos.x, io->MousePos.y);
@@ -155,8 +149,7 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::ColorEdit3("Canvas Clear  Colour", (float *)&state.clearColour);
 
     static ImGuiColorEditFlags base_flags = ImGuiColorEditFlags_None;
-    ImGui::ColorPicker4("##picker", (float *)&state.brushColour,
-                        base_flags | ImGuiColorEditFlags_DisplayRGB);
+    ImGui::ColorPicker4("##picker", (float *)&state.brushColour, base_flags | ImGuiColorEditFlags_DisplayRGB);
 
     if (ImGui::Button("Clear Canvas", ImVec2(200, 60))) {
       state.clear = true;

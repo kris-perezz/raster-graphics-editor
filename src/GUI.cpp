@@ -1,6 +1,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_sdl3.h>
+#include <imgui/imgui_internal.h>
 #include <src/GUI.h>
 
 namespace RGE {
@@ -12,11 +13,11 @@ GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char 
   ImGui::CreateContext();
   io = &ImGui::GetIO();
 
-  io->IniFilename = nullptr;        // ignore saved positions
+  io->IniFilename = nullptr; // ignore saved positions
 
   io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
   io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-  //io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+  // io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
@@ -34,6 +35,7 @@ GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char 
   canvasSize.x = 512;
   canvasSize.y = 512;
 }
+
 GUI::~GUI() {
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplSDL3_Shutdown();
@@ -46,7 +48,49 @@ void GUI::render(CanvasState &state, uint32_t texture) {
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
 
+  ImGuiViewport *viewport = ImGui::GetMainViewport();
+  ImGui::SetNextWindowPos(viewport->Pos);
+  ImGui::SetNextWindowSize(viewport->Size);
+  ImGui::SetNextWindowViewport(viewport->ID);
+
+  ImGuiWindowFlags host_window_flags =
+      ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+      ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+  ImGui::Begin("MainDockSpace", nullptr,
+               ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+                   ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                   ImGuiWindowFlags_NoNavFocus);
+
+  ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+  ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+
+  ImGui::End();
+
+  static bool first_time = true;
+  if (first_time) {
+    first_time = false;
+
+    ImGui::DockBuilderRemoveNode(dockspace_id); // clear old layout
+    ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+    ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
+
+    ImGuiID dock_main_id = dockspace_id;
+    ImGuiID dock_left, dock_right;
+    dock_left =
+        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.25f, nullptr, &dock_main_id);
+    dock_right =
+        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
+
+    ImGui::DockBuilderDockWindow("Canvas", dock_main_id);
+    ImGui::DockBuilderDockWindow("Debug", dock_right);
+    ImGui::DockBuilderDockWindow("Raster Graphics Editor", dock_left);
+
+    ImGui::DockBuilderFinish(dockspace_id);
+  }
   {
+    // ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
     ImGui::SetNextWindowSize(canvasSize, ImGuiCond_Once);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
@@ -74,7 +118,7 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::PopStyleVar();
   }
   {
-    ImGui::SetNextWindowPos(ImVec2(60,60), ImGuiCond_Once);
+    // ImGui::SetNextWindowPos(ImVec2(0, 512), ImGuiCond_Once);
     ImGui::Begin("Debug");
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate,
                 io->Framerate);
@@ -100,7 +144,8 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::End();
   }
   {
-    ImGui::SetNextWindowSize(ImVec2(480,360), ImGuiCond_Once);
+    // ImGui::SetNextWindowPos(ImVec2(512, 0), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_Once);
     ImGui::Begin("Raster Graphics Editor"); // Create a window called Raster
     // Graphics Editor
 
@@ -118,14 +163,14 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     }
     ImGui::End();
   }
-  
+
   // Rendering
   ImGui::Render();
   glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);
 }
 void GUI::draw() {
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-  
+
   if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
     SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
     SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();

@@ -4,6 +4,7 @@
 #include <src/GUI.h>
 #include <src/RGE_pch.h>
 #include <src/Renderer.h>
+#include <src/Shader.h>
 
 namespace RGE {
 class Application {
@@ -23,6 +24,7 @@ private:
 
   std::unique_ptr<RGE::GUI> m_GUI;
   std::shared_ptr<RGE::ComputeShader> m_computeShader;
+  std::shared_ptr<RGE::Shader> m_shader;
   std::unique_ptr<RGE::Renderer> m_renderer;
 
   uint32_t m_texture = 0;

@@ -30,8 +30,7 @@ Application::Application(const std::string &Application) {
   SDL_WindowFlags window_flags =
       SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
-  m_window = SDL_CreateWindow(Application.c_str(), (int)(1280 * m_mainScale),
-                              (int)(720 * m_mainScale), window_flags);
+  m_window = SDL_CreateWindow(Application.c_str(), (int)(1280 * m_mainScale), (int)(720 * m_mainScale), window_flags);
 
   if (m_window == nullptr) {
     throw std::runtime_error(std::string("Error: SDL_CreateWindow(): ") + SDL_GetError());
@@ -53,14 +52,15 @@ Application::Application(const std::string &Application) {
   }
 
   const char *base = SDL_GetBasePath();
-  std::string cPath = std::string(base) + "data/compute.glsl";
-  m_computeShader = std::make_shared<ComputeShader>(cPath.c_str());
+  std::string vPath = std::string(base) + "data/basic.vert";
+  std::string fPath = std::string(base) + "data/basic.frag";
+  m_shader = std::make_shared<Shader>(vPath.c_str(), fPath.c_str());
 
-
-  m_renderer = std::make_unique<Renderer>(m_window, m_computeShader, m_texture, state);
-  m_GUI = std::make_unique<GUI>(m_window, m_context, m_mainScale, m_glslVersion, m_computeShader,
-                                m_renderer->texture());
+  state.canvasSize = {512, 512};
+  m_renderer = std::make_unique<Renderer>(m_window, m_shader, m_texture, state);
+  m_GUI = std::make_unique<GUI>(m_window, m_context, m_mainScale, m_glslVersion, m_renderer->texture());
 }
+
 Application::~Application() {
   m_GUI.reset();
   m_computeShader.reset();
@@ -77,8 +77,7 @@ void Application::run() {
       ImGui_ImplSDL3_ProcessEvent(&event);
       if (event.type == SDL_EVENT_QUIT)
         done = true;
-      if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
-          event.window.windowID == SDL_GetWindowID(m_window))
+      if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(m_window))
         done = true;
     }
 
@@ -86,7 +85,7 @@ void Application::run() {
       SDL_Delay(10);
       continue;
     }
-    
+
     m_GUI->render(state, m_renderer->texture());
     m_renderer->setClearColour(state);
     m_renderer->clear();

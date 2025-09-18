@@ -15,7 +15,7 @@ ComputeRenderer::ComputeRenderer(SDL_Window *window, std::shared_ptr<RGE::Comput
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, state.canvasWidth, state.canvasHeight, 0, GL_RGBA, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, state.canvasSize.x, state.canvasSize.y, 0, GL_RGBA, GL_FLOAT, nullptr);
   glBindTexture(GL_TEXTURE_2D, 0);
   state.clear = true;
 }
@@ -40,7 +40,7 @@ void ComputeRenderer::renderCanvas(CanvasState &state) {
   glUniform4f(3, state.clearColour.x, state.clearColour.y, state.clearColour.z, state.clearColour.w);
 
   glBindImageTexture(0, m_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-  glDispatchCompute(state.canvasWidth, state.canvasHeight, 1);
+  glDispatchCompute(state.canvasSize.x, state.canvasSize.y, 1);
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 }
 
@@ -54,7 +54,7 @@ void ComputeRenderer::clearCanvas(CanvasState &state) {
 
   glBindImageTexture(0, m_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
-  glDispatchCompute(state.canvasWidth, state.canvasHeight, 1); // local_size=1,1,1
+  glDispatchCompute(state.canvasSize.x, state.canvasSize.y, 1); // local_size=1,1,1
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 
   state.clear = false; // consume one-shot

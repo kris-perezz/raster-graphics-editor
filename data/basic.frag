@@ -1,13 +1,30 @@
 #version 430 core
 
-layout(location = 0) out vec4 fragColour;
+layout(location = 0) uniform vec2 mousePos;
+layout(location = 1) uniform vec4 brushColour;
+layout(location = 2) uniform bool clear;
+layout(location = 3) uniform vec4 clearColour;
 
 in vec2 v_texCoords;
 
-uniform sampler2D tex;
+out vec4 fragColour;
 
 void main()
 {
-  vec3 texColour = texture(tex, v_texCoords).rgb;
-  fragColour = vec4(texColour, 1.0);
+    if (clear) {
+          fragColour = clearColour;
+    }
+    else {
+      
+      vec2 center = vec2(0.5, 0.5);
+      float delta = distance(v_texCoords, center);
+
+      if ( delta <= 0.5) {
+        fragColour = brushColour;
+      }
+      else {
+        discard;
+      }
+    }
+
 }

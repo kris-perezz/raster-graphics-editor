@@ -35,11 +35,9 @@ int main(int, char **) {
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
-  SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE |
-                                 SDL_WINDOW_HIDDEN |
-                                 SDL_WINDOW_HIGH_PIXEL_DENSITY;
-  SDL_Window *window = SDL_CreateWindow("Dear ImGui SDL3+OpenGL3 example",
-                                        (int)(1280 * main_scale),
+  SDL_WindowFlags window_flags =
+      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+  SDL_Window *window = SDL_CreateWindow("Dear ImGui SDL3+OpenGL3 example", (int)(1280 * main_scale),
                                         (int)(720 * main_scale), window_flags);
   if (window == nullptr) {
     printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
@@ -66,10 +64,8 @@ int main(int, char **) {
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   (void)io;
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
@@ -77,14 +73,12 @@ int main(int, char **) {
 
   // Setup scaling
   ImGuiStyle &style = ImGui::GetStyle();
-  style.ScaleAllSizes(
-      main_scale); // Bake a fixed style scale. (until we have a solution for
-                   // dynamic style scaling, changing this requires resetting
-                   // Style + calling this again)
-  style.FontScaleDpi =
-      main_scale;  // Set initial font scale. (using io.ConfigDpiScaleFonts=true
-                   // makes this unnecessary. We leave both here for
-                   // documentation purpose)
+  style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for
+                                   // dynamic style scaling, changing this requires resetting
+                                   // Style + calling this again)
+  style.FontScaleDpi = main_scale; // Set initial font scale. (using io.ConfigDpiScaleFonts=true
+                                   // makes this unnecessary. We leave both here for
+                                   // documentation purpose)
 
   // Setup Platform/Renderer backends
   ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
@@ -93,7 +87,7 @@ int main(int, char **) {
   // Our state
   bool show_demo_window = true;
   bool show_another_window = false;
-  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+  ImVec4 canvasColour = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
   // Main loop
   bool done = false;
@@ -132,40 +126,37 @@ int main(int, char **) {
       static float f = 0.0f;
       static int counter = 0;
 
-      ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!"
-                                     // and append into it.
+      ImGui::Begin("Hello, world!");            // Create a window called "Hello, world!"
+                                                // and append into it.
 
       ImGui::Text("This is some useful text."); // Display some text (you can
                                                 // use a format strings too)
-      ImGui::Checkbox(
-          "Demo Window",
-          &show_demo_window); // Edit bools storing our window open/close state
+      ImGui::Checkbox("Demo Window",
+                      &show_demo_window);       // Edit bools storing our window open/close state
       ImGui::Checkbox("Another Window", &show_another_window);
 
       ImGui::SliderFloat("float", &f, 0.0f,
-                         1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
-      ImGui::ColorEdit3(
-          "clear color",
-          (float *)&clear_color);  // Edit 3 floats representing a color
+                         1.0f);                  // Edit 1 float using a slider from 0.0f to 1.0f
+      ImGui::ColorEdit3("clear color",
+                        (float *)&canvasColour); // Edit 3 floats representing a color
 
-      if (ImGui::Button("Button")) // Buttons return true when clicked (most
-                                   // widgets return true when edited/activated)
+      if (ImGui::Button("Button"))               // Buttons return true when clicked (most
+                                                 // widgets return true when edited/activated)
         counter++;
       ImGui::SameLine();
       ImGui::Text("counter = %d", counter);
 
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                  1000.0f / io.Framerate, io.Framerate);
+      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate,
+                  io.Framerate);
       ImGui::End();
     }
 
     // 3. Show another simple window.
     if (show_another_window) {
-      ImGui::Begin(
-          "Another Window",
-          &show_another_window); // Pass a pointer to our bool variable (the
-                                 // window will have a closing button that will
-                                 // clear the bool when clicked)
+      ImGui::Begin("Another Window",
+                   &show_another_window); // Pass a pointer to our bool variable (the
+                                          // window will have a closing button that will
+                                          // clear the bool when clicked)
       ImGui::Text("Hello from another window!");
       if (ImGui::Button("Close Me"))
         show_another_window = false;
@@ -175,8 +166,8 @@ int main(int, char **) {
     // Rendering
     ImGui::Render();
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w,
-                 clear_color.z * clear_color.w, clear_color.w);
+    glClearColor(canvasColour.x * canvasColour.w, canvasColour.y * canvasColour.w,
+                 canvasColour.z * canvasColour.w, canvasColour.w);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);

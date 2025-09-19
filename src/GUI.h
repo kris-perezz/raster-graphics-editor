@@ -11,7 +11,8 @@ namespace RGE {
 class GUI {
 
 public:
-  GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion, uint32_t texture);
+  GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion,
+      uint32_t texture);
   ~GUI();
 
   void render(CanvasState &state, uint32_t texture);
@@ -23,9 +24,9 @@ private:
 
   ImGuiIO *io;
 
-  ImVec4 clear_color;
+  ImVec4 viewportColour;
   ImVec4 brushColour;
-  ImVec4 clearColour;
+  ImVec4 canvasColour;
   bool clear;
   ImVec2 canvasSize;
 };

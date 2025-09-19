@@ -3,7 +3,8 @@
 #include <src/Renderer.h>
 
 namespace RGE {
-Renderer::Renderer(SDL_Window *window, std::shared_ptr<RGE::Shader> shader, uint32_t texture, CanvasState &state)
+Renderer::Renderer(SDL_Window *window, std::shared_ptr<RGE::Shader> shader, uint32_t texture,
+                   CanvasState &state)
     : m_shader(std::move(shader)), m_texture(texture) {
 
   float vertices[] = {// pos        // uv
@@ -45,7 +46,8 @@ Renderer::Renderer(SDL_Window *window, std::shared_ptr<RGE::Shader> shader, uint
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, state.canvasSize.x, state.canvasSize.y, 0, GL_RGBA, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, state.canvasSize.x, state.canvasSize.y, 0, GL_RGBA,
+               GL_FLOAT, nullptr);
 
   // Renderer.cpp (end of constructor, after glTexImage2D and before state.clear=true)
   glGenFramebuffers(1, &m_FBO);
@@ -66,8 +68,8 @@ Renderer::Renderer(SDL_Window *window, std::shared_ptr<RGE::Shader> shader, uint
 Renderer::~Renderer() {}
 
 void Renderer::setClearColour(CanvasState &state) {
-  glClearColor(state.clear_color.x * state.clear_color.w, state.clear_color.y * state.clear_color.w,
-               state.clear_color.z * state.clear_color.w, state.clear_color.w);
+  glClearColor(state.viewportColour.x * state.viewportColour.w, state.viewportColour.y * state.viewportColour.w,
+               state.viewportColour.z * state.viewportColour.w, state.viewportColour.w);
 }
 
 void Renderer::clear() { glClear(GL_COLOR_BUFFER_BIT); }
@@ -83,9 +85,11 @@ void Renderer::renderCanvas(CanvasState &state) {
 
   m_shader->bind();
   glUniform2f(0, state.mousePosition.x, state.mousePosition.y);
-  glUniform4f(1, state.brushColour.x, state.brushColour.y, state.brushColour.z, state.brushColour.w);
+  glUniform4f(1, state.brushColour.x, state.brushColour.y, state.brushColour.z,
+              state.brushColour.w);
   glUniform1i(2, state.clear ? 1 : 0);
-  glUniform4f(3, state.clearColour.x, state.clearColour.y, state.clearColour.z, state.clearColour.w);
+  glUniform4f(3, state.canvasColour.x, state.canvasColour.y, state.canvasColour.z,
+              state.canvasColour.w);
   glUniform1f(4, brushSize);
   glUniform2f(5, state.canvasSize.x, state.canvasSize.y);
 
@@ -104,7 +108,8 @@ void Renderer::clearCanvas(CanvasState &state) {
   glViewport(0, 0, (GLint)state.canvasSize.x, (GLint)state.canvasSize.y);
   m_shader->bind();
   glUniform1i(2, 1);
-  glUniform4f(3, state.clearColour.x, state.clearColour.y, state.clearColour.z, state.clearColour.w);
+  glUniform4f(3, state.canvasColour.x, state.canvasColour.y, state.canvasColour.z,
+              state.canvasColour.w);
 
   glBindVertexArray(m_VAO);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

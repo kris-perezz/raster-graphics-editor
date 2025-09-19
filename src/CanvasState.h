@@ -7,8 +7,8 @@
 
 namespace RGE {
 struct CanvasState {
-  ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.4f, 1.0f);
-  ImVec4 clearColour = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+  ImVec4 viewportColour = ImVec4(0.2f, 0.3f, 0.4f, 1.0f);
+  ImVec4 canvasColour = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
   ImVec4 brushColour = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
   bool clear = false;
   ImVec2 mousePosition = ImVec2(-1, -1);

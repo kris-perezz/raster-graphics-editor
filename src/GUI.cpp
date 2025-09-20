@@ -147,7 +147,7 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     // Graphics Editor
     static ImGuiColorEditFlags base_flags = ImGuiColorEditFlags_None;
 
-    //ImGui::ColorEdit3("clear color", (float *)&state.viewportColour);
+    // ImGui::ColorEdit3("clear color", (float *)&state.viewportColour);
 
     ImGui::Spacing();
     ImGui::Separator();
@@ -166,7 +166,13 @@ void GUI::render(CanvasState &state, uint32_t texture) {
 
     ImGui::ColorPicker4("Brush Colour", (float *)&state.brushColour,
                         base_flags | ImGuiColorEditFlags_DisplayRGB);
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
 
+    if (ImGui::Button("Save Image", ImVec2(200, 60))) {
+      state.save = true;
+    }
     ImGui::End();
   }
 

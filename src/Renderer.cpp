@@ -68,7 +68,8 @@ Renderer::Renderer(SDL_Window *window, std::shared_ptr<RGE::Shader> shader, uint
 Renderer::~Renderer() {}
 
 void Renderer::setClearColour(CanvasState &state) {
-  glClearColor(state.viewportColour.x * state.viewportColour.w, state.viewportColour.y * state.viewportColour.w,
+  glClearColor(state.viewportColour.x * state.viewportColour.w,
+               state.viewportColour.y * state.viewportColour.w,
                state.viewportColour.z * state.viewportColour.w, state.viewportColour.w);
 }
 
@@ -118,6 +119,38 @@ void Renderer::clearCanvas(CanvasState &state) {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   state.clear = false; // consume one-shot
+}
+
+void Renderer::saveImage(CanvasState &state) {
+  if (!state.save)
+    return;
+  const int w = static_cast<int>(state.canvasSize.x);
+  const int h = static_cast<int>(state.canvasSize.y);
+  if (w <= 0 || h <= 0)
+    return;
+
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_FBO);
+  glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+  GLint prev_pack = 0;
+  glGetIntegerv(GL_PACK_ALIGNMENT, &prev_pack);
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+
+  std::vector<unsigned char> rgba(static_cast<size_t>(w) * static_cast<size_t>(h) * 4u);
+  glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+
+  // OpenGL origin is bottom-left, most image formats expect top-left.
+  stbi_flip_vertically_on_write(1);
+
+  // PNG keeps alpha; use JPG if you explicitly want 3-channel lossy output.
+  const int stride = w * 4;
+  if (!stbi_write_png("canvas.png", w, h, 4, rgba.data(), stride)) {
+    // optional: log or throw
+  }
+
+  glPixelStorei(GL_PACK_ALIGNMENT, prev_pack);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 }
 
 } // namespace RGE

@@ -1,4 +1,5 @@
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 
 #include <main.h>
 

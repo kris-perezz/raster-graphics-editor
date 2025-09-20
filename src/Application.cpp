@@ -30,7 +30,8 @@ Application::Application(const std::string &Application) {
   SDL_WindowFlags window_flags =
       SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
-  m_window = SDL_CreateWindow(Application.c_str(), (int)(1280 * m_mainScale), (int)(720 * m_mainScale), window_flags);
+  m_window = SDL_CreateWindow(Application.c_str(), (int)(1280 * m_mainScale),
+                              (int)(720 * m_mainScale), window_flags);
 
   if (m_window == nullptr) {
     throw std::runtime_error(std::string("Error: SDL_CreateWindow(): ") + SDL_GetError());
@@ -58,7 +59,8 @@ Application::Application(const std::string &Application) {
 
   state.canvasSize = {512, 512};
   m_renderer = std::make_unique<Renderer>(m_window, m_shader, m_texture, state);
-  m_GUI = std::make_unique<GUI>(m_window, m_context, m_mainScale, m_glslVersion, m_renderer->texture());
+  m_GUI =
+      std::make_unique<GUI>(m_window, m_context, m_mainScale, m_glslVersion, m_renderer->texture());
 }
 
 Application::~Application() {
@@ -77,7 +79,8 @@ void Application::run() {
       ImGui_ImplSDL3_ProcessEvent(&event);
       if (event.type == SDL_EVENT_QUIT)
         done = true;
-      if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(m_window))
+      if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
+          event.window.windowID == SDL_GetWindowID(m_window))
         done = true;
     }
 
@@ -91,6 +94,7 @@ void Application::run() {
     m_renderer->clear();
     m_renderer->clearCanvas(state);
     m_renderer->renderCanvas(state);
+    m_renderer->saveImage(state);
     m_GUI->draw();
 
     SDL_GL_SwapWindow(m_window);

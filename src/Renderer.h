@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stb/stb_image_write.h>
 #include <src/CanvasState.h>
 #include <src/RGE_pch.h>
 #include <src/Shader.h>
@@ -15,6 +16,7 @@ public:
   void clear();
   void renderCanvas(CanvasState &state);
   void clearCanvas(CanvasState &state);
+  void saveImage(CanvasState &state);
   uint32_t texture() const { return m_texture; }
 
 private:

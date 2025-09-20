@@ -14,5 +14,6 @@ struct CanvasState {
   ImVec2 mousePosition = ImVec2(-1, -1);
   bool draw = false;
   ImVec2 canvasSize = ImVec2(512, 512);
+  bool save = false;
 };
 } // namespace RGE

@@ -141,7 +141,7 @@ void Renderer::saveImage(CanvasState &state) {
   glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
 
   // OpenGL origin is bottom-left, most image formats expect top-left.
-  stbi_flip_vertically_on_write(1);
+  stbi_flip_vertically_on_write(0);
 
   // PNG keeps alpha; use JPG if you explicitly want 3-channel lossy output.
   const int stride = w * 4;
@@ -151,6 +151,8 @@ void Renderer::saveImage(CanvasState &state) {
 
   glPixelStorei(GL_PACK_ALIGNMENT, prev_pack);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+  state.save = false;
 }
 
 } // namespace RGE

@@ -1,4 +1,5 @@
 #include <ImGuiFileDialog/ImGuiFileDialog.h>
+#include <src/Style.h>
 #include <src/GUI.h>
 
 namespace RAGE {
@@ -18,9 +19,13 @@ GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  ImGuiStyle &style = ImGui::GetStyle();
+  ImGuiStyle& style = ImGui::GetStyle();
+  styleSetup2();
   style.ScaleAllSizes(mainScale);
   style.FontScaleDpi = mainScale;
+  const char *base = SDL_GetBasePath();
+  std::string fontPath = std::string(base) + "data/AnonymousPro-Regular.ttf";
+  io->Fonts->AddFontFromFileTTF(fontPath.c_str(), 14.0f);
   io->ConfigDpiScaleFonts = true;
   io->ConfigDpiScaleViewports = true;
 

@@ -1,12 +1,14 @@
 #pragma once
 
+#include <src/RAGE_pch.h>
+
+#include <src/CanvasState.h>
 #include <src/ComputeShader.h>
 #include <src/GUI.h>
-#include <src/RGE_pch.h>
 #include <src/Renderer.h>
 #include <src/Shader.h>
 
-namespace RGE {
+namespace RAGE {
 class Application {
 public:
   CanvasState state{};
@@ -22,11 +24,11 @@ private:
   const char *m_glslVersion;
   float m_mainScale;
 
-  std::unique_ptr<RGE::GUI> m_GUI;
-  std::shared_ptr<RGE::ComputeShader> m_computeShader;
-  std::shared_ptr<RGE::Shader> m_shader;
-  std::unique_ptr<RGE::Renderer> m_renderer;
+  std::unique_ptr<RAGE::GUI> m_GUI;
+  std::shared_ptr<RAGE::ComputeShader> m_computeShader;
+  std::shared_ptr<RAGE::Shader> m_shader;
+  std::unique_ptr<RAGE::Renderer> m_renderer;
 
   uint32_t m_texture = 0;
 };
-} // namespace RGE
+} // namespace RAGE

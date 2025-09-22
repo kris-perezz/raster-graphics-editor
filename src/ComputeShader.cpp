@@ -1,6 +1,6 @@
 #include <src/ComputeShader.h>
 
-namespace RGE {
+namespace RAGE {
 ComputeShader::ComputeShader(const char *computePath) {
   std::string computeCode;
   std::ifstream cShaderFile;

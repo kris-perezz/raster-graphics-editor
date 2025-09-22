@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(RGE VERSION 1.0)
+project(RAGE VERSION 1.0)
 
 include(FetchContent)
 
 cmake_policy(SET CMP0072 NEW)
 
-set(RGE_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(RAGE_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -40,7 +40,7 @@ FetchContent_MakeAvailable(glm)
 
 find_package(OpenGL REQUIRED)
 
-set(RGE_HEADER 
+set(RAGE_HEADER 
     src/main.h
     src/Shader.h
     src/ComputeShader.h
@@ -50,7 +50,7 @@ set(RGE_HEADER
     src/CanvasState.h)
 
 
-set(RGE_SOURCE
+set(RAGE_SOURCE
     src/Shader.cpp
     src/ComputeShader.cpp
     src/Application.cpp
@@ -62,19 +62,19 @@ add_subdirectory(include/imgui)
 add_subdirectory(include/stb)
 add_subdirectory(include/ImGuiFileDialog)
 
-add_library(RGE_Engine ${RGE_SOURCE} ${RGE_HEADER})
+add_library(RAGE_Engine ${RAGE_SOURCE} ${RAGE_HEADER})
 
-target_precompile_headers(RGE_Engine PRIVATE src/RGE_pch.h)
+target_precompile_headers(RAGE_Engine PRIVATE src/RAGE_pch.h)
 
 target_include_directories(
-  RGE_Engine 
-  PUBLIC ${RGE_ROOT_PATH}
-  PUBLIC ${RGE_ROOT_PATH}/src
-  PUBLIC ${RGE_ROOT_PATH}/include
-  PUBLIC ${RGE_ROOT_PATH}/include/imgui)
+  RAGE_Engine 
+  PUBLIC ${RAGE_ROOT_PATH}
+  PUBLIC ${RAGE_ROOT_PATH}/src
+  PUBLIC ${RAGE_ROOT_PATH}/include
+  PUBLIC ${RAGE_ROOT_PATH}/include/imgui)
 
 target_link_libraries(
-  RGE_Engine 
+  RAGE_Engine 
   glad
   glm
   imgui
@@ -83,14 +83,14 @@ target_link_libraries(
   SDL3::SDL3
   ${OPENGL_LIBRARIES})
 
-add_executable(RGE src/main.cpp)
+add_executable(RAGE src/main.cpp)
 add_executable(DEMO src/imgui_demo.cpp)
 
-target_link_libraries(RGE PRIVATE RGE_Engine)
-target_link_libraries(DEMO PRIVATE RGE_Engine)
+target_link_libraries(RAGE PRIVATE RAGE_Engine)
+target_link_libraries(DEMO PRIVATE RAGE_Engine)
 
 if(WIN32)
-  foreach(exe RGE DEMO)
+  foreach(exe RAGE DEMO)
     # Copy SDL3.dll beside the exe
     add_custom_command(TARGET ${exe} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -109,11 +109,11 @@ else()
   execute_process(COMMAND ${CMAKE_COMMAND} -E rm -rf "${RUN_DATA_DIR}")
   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
                           "${CMAKE_SOURCE_DIR}/data" "${RUN_DATA_DIR}")
-  target_include_directories(RGE_Engine PUBLIC "${RUN_DATA_DIR}")
+  target_include_directories(RAGE_Engine PUBLIC "${RUN_DATA_DIR}")
 endif()
 
 # Binaries/libs
-install(TARGETS RGE DEMO RGE_Engine
+install(TARGETS RAGE DEMO RAGE_Engine
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
@@ -127,8 +127,8 @@ endif()
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION bin)
 
 # CPack config
-set(CPACK_PACKAGE_NAME "RGE")
-set(CPACK_PACKAGE_VENDOR "RGE")
+set(CPACK_PACKAGE_NAME "RAGE")
+set(CPACK_PACKAGE_VENDOR "RAGE")
 set(CPACK_PACKAGE_VERSION "1.0.0")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Raster Graphics Editor")
 set(CPACK_RESOURCE_FILE_README  "${CMAKE_SOURCE_DIR}/README.md")
@@ -138,15 +138,15 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 # build a zip for all, NSIS installer on Windows if NSIS is installed
 if(WIN32)
   set(CPACK_GENERATOR "ZIP;NSIS")
-  set(CPACK_NSIS_DISPLAY_NAME "RGE")
-  set(CPACK_NSIS_PACKAGE_NAME "RGE")
+  set(CPACK_NSIS_DISPLAY_NAME "RAGE")
+  set(CPACK_NSIS_PACKAGE_NAME "RAGE")
   set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY "RGE")
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "RAGE")
 else()
   set(CPACK_GENERATOR "TGZ;TXZ;ZIP")
 endif()
 
-# Nice file name: RGE-1.0.0-windows-x86_64.zip, etc.
+# Nice file name: RAGE-1.0.0-windows-x86_64.zip, etc.
 set(CPACK_PACKAGE_FILE_NAME
     "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 

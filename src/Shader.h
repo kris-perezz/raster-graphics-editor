@@ -1,8 +1,8 @@
 #pragma once
 
-#include <src/RGE_pch.h>
+#include <src/RAGE_pch.h>
 
-namespace RGE {
+namespace RAGE {
 class Shader {
 public:
   Shader(const char *vertexPath, const char *fragmentPath);

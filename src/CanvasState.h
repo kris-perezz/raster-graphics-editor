@@ -3,9 +3,9 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_sdl3.h>
-#include <src/RGE_pch.h>
+#include <src/RAGE_pch.h>
 
-namespace RGE {
+namespace RAGE {
 struct CanvasState {
   ImVec4 viewportColour = ImVec4(0.2f, 0.3f, 0.4f, 1.0f);
   ImVec4 canvasColour = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
@@ -17,4 +17,4 @@ struct CanvasState {
   bool save = false;
   std::string pendingSavePath;
 };
-} // namespace RGE
+} // namespace RAGE

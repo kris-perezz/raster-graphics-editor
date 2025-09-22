@@ -2,14 +2,14 @@
 
 #include <stb/stb_image_write.h>
 #include <src/CanvasState.h>
-#include <src/RGE_pch.h>
+#include <src/RAGE_pch.h>
 #include <src/Shader.h>
 
-namespace RGE {
+namespace RAGE {
 
 class Renderer {
 public:
-  Renderer(SDL_Window *window, std::shared_ptr<RGE::Shader> shader, uint32_t texture, CanvasState &state);
+  Renderer(SDL_Window *window, std::shared_ptr<RAGE::Shader> shader, uint32_t texture, CanvasState &state);
   ~Renderer();
 
   void setClearColour(CanvasState &state);
@@ -26,6 +26,6 @@ private:
   uint32_t m_VBO;
   uint32_t m_EBO;
   uint32_t m_FBO;
-  std::shared_ptr<RGE::Shader> m_shader;
+  std::shared_ptr<RAGE::Shader> m_shader;
 };
-} // namespace RGE
+} // namespace RAGE

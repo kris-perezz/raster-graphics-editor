@@ -10,7 +10,7 @@
 #include <src/Application.h>
 
 int main(int, char **) {
-  auto app = std::make_unique<RGE::Application>("raster-graphics-editor");
+  auto app = std::make_unique<RAGE::Application>("raster-graphics-editor");
 
   app->run();
   

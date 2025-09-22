@@ -1,7 +1,7 @@
 #include <ImGuiFileDialog/ImGuiFileDialog.h>
 #include <src/GUI.h>
 
-namespace RGE {
+namespace RAGE {
 GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion,
          uint32_t texture)
     : m_texture(texture) {
@@ -42,10 +42,10 @@ void GUI::render(CanvasState &state, uint32_t texture) {
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
 
-  viewport = ImGui::GetMainViewport();
-  ImGui::SetNextWindowPos(viewport->Pos);
-  ImGui::SetNextWindowSize(viewport->Size);
-  ImGui::SetNextWindowViewport(viewport->ID);
+  m_viewport = ImGui::GetMainViewport();
+  ImGui::SetNextWindowPos(m_viewport->Pos);
+  ImGui::SetNextWindowSize(m_viewport->Size);
+  ImGui::SetNextWindowViewport(m_viewport->ID);
 
   ImGuiWindowFlags host_window_flags =
       ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
@@ -68,7 +68,7 @@ void GUI::render(CanvasState &state, uint32_t texture) {
 
     ImGui::DockBuilderRemoveNode(dockspace_id); // clear old layout
     ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
-    ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
+    ImGui::DockBuilderSetNodeSize(dockspace_id, m_viewport->Size);
 
     ImGuiID dock_main_id = dockspace_id;
     ImGuiID dock_left, dock_right;
@@ -135,6 +135,8 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::Text("io->WantTextInput: %d", io->WantTextInput);
     ImGui::Text("io->WantSetMousePos: %d", io->WantSetMousePos);
     ImGui::Text("io->NavActive: %d, io->NavVisible: %d", io->NavActive, io->NavVisible);
+
+    
     ImGui::End();
   }
   {
@@ -170,8 +172,8 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     if (ImGui::Button("Save Image", ImVec2(200, 60))) {
       const char *base = SDL_GetBasePath();
       IGFD::FileDialogConfig cfg;
-      cfg.path = std::string(base);              // starting directory
-      cfg.fileName = "canvas.png"; // default file name
+      cfg.path = std::string(base); // starting directory
+      cfg.fileName = "canvas.png";  // default file name
       cfg.flags = ImGuiFileDialogFlags_ConfirmOverwrite;
 
       ImGuiFileDialog::Instance()->OpenDialog("SavePNGDlg", "Save PNG", "PNG file{.png}", cfg);
@@ -180,10 +182,10 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::End();
   }
   {
-    ImVec2 minDialogueSize(viewport->Size.x * 0.8, viewport->Size.y * 0.8);
+    ImVec2 minDialogueSize(m_viewport->Size.x * 0.8, m_viewport->Size.y * 0.8);
 
     if (ImGuiFileDialog::Instance()->Display("SavePNGDlg", ImGuiWindowFlags_None, minDialogueSize,
-                                             viewport->Size)) {
+                                             m_viewport->Size)) {
       if (ImGuiFileDialog::Instance()->IsOk()) {
         state.pendingSavePath = ImGuiFileDialog::Instance()->GetFilePathName();
         state.save = true;
@@ -206,4 +208,4 @@ void GUI::draw() {
     SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
   }
 }
-} // namespace RGE
+} // namespace RAGE

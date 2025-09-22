@@ -3,11 +3,8 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_sdl3.h>
-#include <src/CanvasState.h>
-#include <src/GUI.h>
-#include <src/Renderer.h>
 
-namespace RGE {
+namespace RAGE {
 Application::Application(const std::string &Application) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     throw std::runtime_error(std::string("Error: SDL_Init(): ") + SDL_GetError());
@@ -100,4 +97,4 @@ void Application::run() {
     SDL_GL_SwapWindow(m_window);
   }
 }
-} // namespace RGE
+} // namespace RAGE

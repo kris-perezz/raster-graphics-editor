@@ -1,6 +1,6 @@
 #pragma once
 
-#include <src/RGE_pch.h>
+#include <src/RAGE_pch.h>
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
@@ -8,7 +8,7 @@
 #include <imgui/imgui_internal.h>
 #include <src/CanvasState.h>
 
-namespace RGE {
+namespace RAGE {
 class GUI {
 
 public:
@@ -25,12 +25,6 @@ private:
 
   ImGuiIO *io;
 
-  ImVec4 viewportColour;
-  ImVec4 brushColour;
-  ImVec4 canvasColour;
-  bool clear;
-  ImVec2 canvasSize;
-
-  ImGuiViewport *viewport;
+  ImGuiViewport *m_viewport;
 };
-} // namespace RGE
+} // namespace RAGE

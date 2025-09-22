@@ -4,13 +4,12 @@
 #include <src/GUI.h>
 #include <src/Renderer.h>
 
-namespace RGE {
-Renderer::Renderer(SDL_Window *window, std::shared_ptr<RGE::Shader> shader, uint32_t texture,
+namespace RAGE {
+Renderer::Renderer(SDL_Window *window, std::shared_ptr<RAGE::Shader> shader, uint32_t texture,
                    CanvasState &state)
     : m_shader(std::move(shader)), m_texture(texture) {
 
-  float vertices[] = {// pos        // uv
-                      -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,  -1.0f, 1.0f, 0.0f,
+  float vertices[] = {-1.0f, -1.0f, 0.0f, 0.0f, 1.0f,  -1.0f, 1.0f, 0.0f,
                       1.0f,  1.0f,  1.0f, 1.0f, -1.0f, 1.0f,  0.0f, 1.0f};
 
   unsigned int indices[] = {0, 1, 2, 2, 3, 0};
@@ -51,18 +50,15 @@ Renderer::Renderer(SDL_Window *window, std::shared_ptr<RGE::Shader> shader, uint
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, state.canvasSize.x, state.canvasSize.y, 0, GL_RGBA,
                GL_FLOAT, nullptr);
 
-  // Renderer.cpp (end of constructor, after glTexImage2D and before state.clear=true)
   glGenFramebuffers(1, &m_FBO);
   glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
+
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     throw std::runtime_error("Framebuffer not complete");
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindTexture(GL_TEXTURE_2D, 0);
-  // Optional: depth test off (we don’t use depth)
   glDisable(GL_DEPTH_TEST);
-
-  state.clear = true;
 
   state.clear = true;
 }
@@ -157,4 +153,4 @@ void Renderer::saveImage(CanvasState &state) {
   state.pendingSavePath.clear();
 }
 
-} // namespace RGE
+} // namespace RAGE

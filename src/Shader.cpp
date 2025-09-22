@@ -1,5 +1,5 @@
 #include <src/Shader.h>
-namespace RGE {
+namespace RAGE {
 Shader::Shader(const char *vertexPath, const char *fragmentPath) {
   // Read our shaders into the appropriate buffers
   // Create an empty vertex shader handle
@@ -139,4 +139,4 @@ void Shader::setInt(const std::string &name, int value) const {
 void Shader::setFloat(const std::string &name, float value) const {
   glUniform1f(glGetUniformLocation(m_rendererID, name.c_str()), value);
 }
-} // namespace RGE
+} // namespace RAGE

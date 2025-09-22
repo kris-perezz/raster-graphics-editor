@@ -182,10 +182,11 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::End();
   }
   {
-    ImVec2 minDialogueSize(m_viewport->Size.x * 0.8, m_viewport->Size.y * 0.8);
+    ImVec2 minDialogueSize(m_viewport->Size.x * 0.4, m_viewport->Size.y * 0.4);
+    ImVec2 maxDialogueSize(m_viewport->Size.x * 0.6, m_viewport->Size.y * 0.6);
 
     if (ImGuiFileDialog::Instance()->Display("SavePNGDlg", ImGuiWindowFlags_None, minDialogueSize,
-                                             m_viewport->Size)) {
+                                             maxDialogueSize)) {
       if (ImGuiFileDialog::Instance()->IsOk()) {
         state.pendingSavePath = ImGuiFileDialog::Instance()->GetFilePathName();
         state.save = true;

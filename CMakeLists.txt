@@ -57,6 +57,7 @@ set(RGE_SOURCE
 
 add_subdirectory(include/glad)
 add_subdirectory(include/imgui)
+add_subdirectory(include/ImGuiFileDialog)
 
 add_library(RGE_Engine ${RGE_SOURCE} ${RGE_HEADER})
 
@@ -74,6 +75,7 @@ target_link_libraries(
   glad
   glm
   imgui
+  ImGuiFileDialog
   SDL3::SDL3
   ${OPENGL_LIBRARIES})
 

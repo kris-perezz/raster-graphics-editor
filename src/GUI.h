@@ -5,6 +5,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_sdl3.h>
+#include <imgui/imgui_internal.h>
 #include <src/CanvasState.h>
 
 namespace RGE {
@@ -29,5 +30,7 @@ private:
   ImVec4 canvasColour;
   bool clear;
   ImVec2 canvasSize;
+
+  ImGuiViewport *viewport;
 };
 } // namespace RGE

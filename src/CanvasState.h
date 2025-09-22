@@ -15,5 +15,6 @@ struct CanvasState {
   bool draw = false;
   ImVec2 canvasSize = ImVec2(512, 512);
   bool save = false;
+  std::string pendingSavePath;
 };
 } // namespace RGE

@@ -9,6 +9,8 @@ cmake_policy(SET CMP0072 NEW)
 set(RGE_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 
 
 option(SDL_VENDORED OFF)
@@ -57,6 +59,7 @@ set(RGE_SOURCE
 
 add_subdirectory(include/glad)
 add_subdirectory(include/imgui)
+add_subdirectory(include/stb)
 add_subdirectory(include/ImGuiFileDialog)
 
 add_library(RGE_Engine ${RGE_SOURCE} ${RGE_HEADER})
@@ -76,6 +79,7 @@ target_link_libraries(
   glm
   imgui
   ImGuiFileDialog
+  stb
   SDL3::SDL3
   ${OPENGL_LIBRARIES})
 

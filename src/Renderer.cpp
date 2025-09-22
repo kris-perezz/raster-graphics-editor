@@ -1,3 +1,5 @@
+#include <include/stb/stb_image_write.h>
+
 #include <src/CanvasState.h>
 #include <src/GUI.h>
 #include <src/Renderer.h>
@@ -129,6 +131,9 @@ void Renderer::saveImage(CanvasState &state) {
   if (w <= 0 || h <= 0)
     return;
 
+  std::string outPath =
+      state.pendingSavePath.empty() ? std::string("canvas.png") : state.pendingSavePath;
+
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_FBO);
   glReadBuffer(GL_COLOR_ATTACHMENT0);
 
@@ -140,19 +145,16 @@ void Renderer::saveImage(CanvasState &state) {
   std::vector<unsigned char> rgba(static_cast<size_t>(w) * static_cast<size_t>(h) * 4u);
   glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
 
-  // OpenGL origin is bottom-left, most image formats expect top-left.
   stbi_flip_vertically_on_write(0);
 
-  // PNG keeps alpha; use JPG if you explicitly want 3-channel lossy output.
   const int stride = w * 4;
-  if (!stbi_write_png("canvas.png", w, h, 4, rgba.data(), stride)) {
-    // optional: log or throw
-  }
+  const int ok = stbi_write_png(outPath.c_str(), w, h, 4, rgba.data(), stride);
 
   glPixelStorei(GL_PACK_ALIGNMENT, prev_pack);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
   state.save = false;
+  state.pendingSavePath.clear();
 }
 
 } // namespace RGE

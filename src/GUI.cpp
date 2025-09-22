@@ -1,7 +1,4 @@
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_opengl3.h>
-#include <imgui/imgui_impl_sdl3.h>
-#include <imgui/imgui_internal.h>
+#include <ImGuiFileDialog/ImGuiFileDialog.h>
 #include <src/GUI.h>
 
 namespace RGE {
@@ -45,7 +42,7 @@ void GUI::render(CanvasState &state, uint32_t texture) {
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
 
-  ImGuiViewport *viewport = ImGui::GetMainViewport();
+  viewport = ImGui::GetMainViewport();
   ImGui::SetNextWindowPos(viewport->Pos);
   ImGui::SetNextWindowSize(viewport->Size);
   ImGui::SetNextWindowViewport(viewport->ID);
@@ -171,11 +168,29 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::Spacing();
 
     if (ImGui::Button("Save Image", ImVec2(200, 60))) {
-      state.save = true;
+      const char *base = SDL_GetBasePath();
+      IGFD::FileDialogConfig cfg;
+      cfg.path = std::string(base);              // starting directory
+      cfg.fileName = "canvas.png"; // default file name
+      cfg.flags = ImGuiFileDialogFlags_ConfirmOverwrite;
+
+      ImGuiFileDialog::Instance()->OpenDialog("SavePNGDlg", "Save PNG", "PNG file{.png}", cfg);
     }
+
     ImGui::End();
   }
+  {
+    ImVec2 minDialogueSize(viewport->Size.x * 0.8, viewport->Size.y * 0.8);
 
+    if (ImGuiFileDialog::Instance()->Display("SavePNGDlg", ImGuiWindowFlags_None, minDialogueSize,
+                                             viewport->Size)) {
+      if (ImGuiFileDialog::Instance()->IsOk()) {
+        state.pendingSavePath = ImGuiFileDialog::Instance()->GetFilePathName();
+        state.save = true;
+      }
+      ImGuiFileDialog::Instance()->Close();
+    }
+  }
   // Rendering
   ImGui::Render();
   glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);

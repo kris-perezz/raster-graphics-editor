@@ -61,6 +61,7 @@ add_subdirectory(include/glad)
 add_subdirectory(include/imgui)
 add_subdirectory(include/stb)
 add_subdirectory(include/ImGuiFileDialog)
+add_subdirectory(include/dirent)
 
 add_library(RAGE_Engine ${RAGE_SOURCE} ${RAGE_HEADER})
 
@@ -80,6 +81,7 @@ target_link_libraries(
   imgui
   ImGuiFileDialog
   stb
+  dirent
   SDL3::SDL3
   ${OPENGL_LIBRARIES})
 

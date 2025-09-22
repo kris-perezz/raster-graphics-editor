@@ -75,13 +75,13 @@ void Application::run() {
     while (SDL_PollEvent(&event)) {
       ImGui_ImplSDL3_ProcessEvent(&event);
       if (event.type == SDL_EVENT_QUIT)
-        done = true;
+        m_GUI->quitRequest = true;
       if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(m_window))
-        done = true;
+        m_GUI->quitRequest = true;
       if (event.type == SDL_EVENT_KEY_UP && event.key.key == SDLK_F11) {
-        const bool is_fullscreen = (SDL_GetWindowFlags(m_window) & SDL_WINDOW_FULLSCREEN) != 0;
+        const bool isFullscreen = (SDL_GetWindowFlags(m_window) & SDL_WINDOW_FULLSCREEN) != 0;
 
-        if (is_fullscreen) {
+        if (isFullscreen) {
           SDL_SetWindowFullscreen(m_window, false);
           SDL_RestoreWindow(m_window);
         } 
@@ -90,6 +90,8 @@ void Application::run() {
         }
         SDL_SyncWindow(m_window);
       }
+      if (event.type == SDL_EVENT_KEY_UP && event.key.key == SDLK_ESCAPE)
+        m_GUI->quitRequest = true;
     }
 
     if (SDL_GetWindowFlags(m_window) & SDL_WINDOW_MINIMIZED) {
@@ -98,6 +100,9 @@ void Application::run() {
     }
 
     m_GUI->render(state, m_renderer->texture());
+    if (m_GUI->quitConfirmed) {
+        done = true;
+    }
     m_renderer->setClearColour(state);
     m_renderer->clear();
     m_renderer->clearCanvas(state);

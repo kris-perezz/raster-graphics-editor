@@ -2,8 +2,7 @@
 #include <src/GUI.h>
 
 namespace RAGE {
-GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion,
-         uint32_t texture)
+GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion, uint32_t texture)
     : m_texture(texture) {
 
   IMGUI_CHECKVERSION();
@@ -47,14 +46,13 @@ void GUI::render(CanvasState &state, uint32_t texture) {
   ImGui::SetNextWindowSize(m_viewport->Size);
   ImGui::SetNextWindowViewport(m_viewport->ID);
 
-  ImGuiWindowFlags host_window_flags =
-      ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
-      ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+  ImGuiWindowFlags host_window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+                                       ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                                       ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                       ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
   ImGui::Begin("MainDockSpace", nullptr,
-               ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-                   ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+               ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
                    ImGuiWindowFlags_NoNavFocus);
 
   ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
@@ -72,10 +70,8 @@ void GUI::render(CanvasState &state, uint32_t texture) {
 
     ImGuiID dock_main_id = dockspace_id;
     ImGuiID dock_left, dock_right;
-    dock_left =
-        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.25f, nullptr, &dock_main_id);
-    dock_right =
-        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
+    dock_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.25f, nullptr, &dock_main_id);
+    dock_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
 
     ImGui::DockBuilderDockWindow("Canvas", dock_main_id);
     ImGui::DockBuilderDockWindow("Debug", dock_right);
@@ -89,9 +85,8 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
     ImGui::Begin("Canvas", nullptr,
-                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
-                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
-                     ImGuiWindowFlags_NoMove);
+                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
 
     ImGui::Image((void *)(intptr_t)m_texture, state.canvasSize);
 
@@ -114,8 +109,7 @@ void GUI::render(CanvasState &state, uint32_t texture) {
   {
     // ImGui::SetNextWindowPos(ImVec2(0, 512), ImGuiCond_Once);
     ImGui::Begin("Debug");
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate,
-                io->Framerate);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
 
     if (ImGui::IsMousePosValid())
       ImGui::Text("Mouse pos: (%g, %g)", io->MousePos.x, io->MousePos.y);
@@ -136,7 +130,6 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::Text("io->WantSetMousePos: %d", io->WantSetMousePos);
     ImGui::Text("io->NavActive: %d, io->NavVisible: %d", io->NavActive, io->NavVisible);
 
-    
     ImGui::End();
   }
   {
@@ -152,8 +145,7 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    ImGui::ColorPicker4("Canvas Colour", (float *)&state.canvasColour,
-                        base_flags | ImGuiColorEditFlags_DisplayRGB);
+    ImGui::ColorPicker4("Canvas Colour", (float *)&state.canvasColour, base_flags | ImGuiColorEditFlags_DisplayRGB);
 
     if (ImGui::Button("Clear Canvas", ImVec2(200, 60))) {
       state.clear = true;
@@ -163,8 +155,7 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    ImGui::ColorPicker4("Brush Colour", (float *)&state.brushColour,
-                        base_flags | ImGuiColorEditFlags_DisplayRGB);
+    ImGui::ColorPicker4("Brush Colour", (float *)&state.brushColour, base_flags | ImGuiColorEditFlags_DisplayRGB);
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::Spacing();
@@ -174,19 +165,35 @@ void GUI::render(CanvasState &state, uint32_t texture) {
       IGFD::FileDialogConfig cfg;
       cfg.path = std::string(base); // starting directory
       cfg.fileName = "canvas.png";  // default file name
-      cfg.flags = ImGuiFileDialogFlags_ConfirmOverwrite;
+      cfg.flags = ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_DontShowHiddenFiles;
 
       ImGuiFileDialog::Instance()->OpenDialog("SavePNGDlg", "Save PNG", "PNG file{.png}", cfg);
     }
-
+    {
+      if (quitRequest) {
+        ImGui::OpenPopup("ConfirmQuit");
+        quitRequest = false;
+      }
+      if (ImGui::BeginPopupModal("ConfirmQuit", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Are you sure you want to quit?");
+        if (ImGui::Button("Yes")) {
+          quitConfirmed = true;
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("No")) {
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+      }
+    }
     ImGui::End();
   }
   {
-    ImVec2 minDialogueSize(m_viewport->Size.x * 0.4, m_viewport->Size.y * 0.4);
-    ImVec2 maxDialogueSize(m_viewport->Size.x * 0.6, m_viewport->Size.y * 0.6);
+    ImVec2 minDialogueSize(m_viewport->Size.x * 0.8, m_viewport->Size.y * 0.4);
+    ImVec2 maxDialogueSize(m_viewport->Size.x * 0.8, m_viewport->Size.y * 0.8);
 
-    if (ImGuiFileDialog::Instance()->Display("SavePNGDlg", ImGuiWindowFlags_None, minDialogueSize,
-                                             maxDialogueSize)) {
+    if (ImGuiFileDialog::Instance()->Display("SavePNGDlg", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking, minDialogueSize, maxDialogueSize)) {
       if (ImGuiFileDialog::Instance()->IsOk()) {
         state.pendingSavePath = ImGuiFileDialog::Instance()->GetFilePathName();
         state.save = true;

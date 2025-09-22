@@ -12,6 +12,9 @@ namespace RAGE {
 class GUI {
 
 public:
+  bool quitRequest = false;
+  bool quitConfirmed = false;
+
   GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion,
       uint32_t texture);
   ~GUI();

@@ -16,5 +16,6 @@ struct CanvasState {
   ImVec2 canvasSize = ImVec2(512, 512);
   bool save = false;
   std::string pendingSavePath;
+  float brushSize = 8.0f;
 };
 } // namespace RAGE

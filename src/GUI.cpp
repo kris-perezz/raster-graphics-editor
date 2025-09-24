@@ -1,6 +1,6 @@
 #include <ImGuiFileDialog/ImGuiFileDialog.h>
-#include <src/Style.h>
 #include <src/GUI.h>
+#include <src/Style.h>
 
 namespace RAGE {
 GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion, uint32_t texture)
@@ -17,10 +17,10 @@ GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char 
   // io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
   // Setup Dear ImGui style
-  ImGui::StyleColorsDark();
+  //ImGui::StyleColorsDark();
 
-  ImGuiStyle& style = ImGui::GetStyle();
-  styleSetup2();
+  ImGuiStyle &style = ImGui::GetStyle();
+  styleSetup3();
   style.ScaleAllSizes(mainScale);
   style.FontScaleDpi = mainScale;
   const char *base = SDL_GetBasePath();
@@ -165,6 +165,9 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::Separator();
     ImGui::Spacing();
 
+    
+    ImGui::DragFloat("Brush Size", &state.brushSize, 1.0f);
+
     if (ImGui::Button("Save Image", ImVec2(200, 60))) {
       const char *base = SDL_GetBasePath();
       IGFD::FileDialogConfig cfg;
@@ -198,7 +201,8 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImVec2 minDialogueSize(m_viewport->Size.x * 0.8, m_viewport->Size.y * 0.4);
     ImVec2 maxDialogueSize(m_viewport->Size.x * 0.8, m_viewport->Size.y * 0.8);
 
-    if (ImGuiFileDialog::Instance()->Display("SavePNGDlg", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking, minDialogueSize, maxDialogueSize)) {
+    if (ImGuiFileDialog::Instance()->Display("SavePNGDlg", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking,
+                                             minDialogueSize, maxDialogueSize)) {
       if (ImGuiFileDialog::Instance()->IsOk()) {
         state.pendingSavePath = ImGuiFileDialog::Instance()->GetFilePathName();
         state.save = true;

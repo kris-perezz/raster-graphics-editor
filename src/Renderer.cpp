@@ -80,8 +80,6 @@ void Renderer::renderCanvas(CanvasState &state) {
   glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
   glViewport(0, 0, (GLint)state.canvasSize.x, (GLint)state.canvasSize.y);
 
-  float brushSize = 8.0f;
-
   m_shader->bind();
   glUniform2f(0, state.mousePosition.x, state.mousePosition.y);
   glUniform4f(1, state.brushColour.x, state.brushColour.y, state.brushColour.z,
@@ -89,7 +87,7 @@ void Renderer::renderCanvas(CanvasState &state) {
   glUniform1i(2, state.clear ? 1 : 0);
   glUniform4f(3, state.canvasColour.x, state.canvasColour.y, state.canvasColour.z,
               state.canvasColour.w);
-  glUniform1f(4, brushSize);
+  glUniform1f(4, state.brushSize);
   glUniform2f(5, state.canvasSize.x, state.canvasSize.y);
 
   glBindVertexArray(m_VAO);

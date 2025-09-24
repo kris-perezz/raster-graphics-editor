@@ -6,4 +6,5 @@ namespace RAGE {
     void styleSetup1();
     void styleSetup2();
     void styleSetup3();
+    void styleSetup4();
 }

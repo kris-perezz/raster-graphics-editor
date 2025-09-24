@@ -20,7 +20,7 @@ GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char 
   //ImGui::StyleColorsDark();
 
   ImGuiStyle &style = ImGui::GetStyle();
-  styleSetup3();
+  styleSetup4();
   style.ScaleAllSizes(mainScale);
   style.FontScaleDpi = mainScale;
   const char *base = SDL_GetBasePath();
@@ -179,11 +179,11 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     }
     {
       if (quitRequest) {
-        ImGui::OpenPopup("ConfirmQuit");
+        ImGui::OpenPopup("RAGE Quit");
         quitRequest = false;
       }
-      if (ImGui::BeginPopupModal("ConfirmQuit", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Are you sure you want to quit?");
+      if (ImGui::BeginPopupModal("RAGE Quit", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Are you rage quitting?");
         if (ImGui::Button("Yes")) {
           quitConfirmed = true;
           ImGui::CloseCurrentPopup();

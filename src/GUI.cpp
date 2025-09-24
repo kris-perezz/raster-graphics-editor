@@ -14,6 +14,8 @@ GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char 
 
   io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
   io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+  io->ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+  io->ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
   // io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
   // Setup Dear ImGui style
@@ -24,8 +26,8 @@ GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char 
   style.ScaleAllSizes(mainScale);
   style.FontScaleDpi = mainScale;
   const char *base = SDL_GetBasePath();
-  std::string fontPath = std::string(base) + "data/AnonymousPro-Regular.ttf";
-  io->Fonts->AddFontFromFileTTF(fontPath.c_str(), 14.0f);
+  std::string fontPath = std::string(base) + "data/Iosevka-ExtendedLight.ttf";
+  io->Fonts->AddFontFromFileTTF(fontPath.c_str());
   io->ConfigDpiScaleFonts = true;
   io->ConfigDpiScaleViewports = true;
 
@@ -166,7 +168,7 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::Spacing();
 
     
-    ImGui::DragFloat("Brush Size", &state.brushSize, 1.0f);
+    ImGui::DragFloat("Brush Size", &state.brushSize, 1.0f, 0.0f, 100.0f);
 
     if (ImGui::Button("Save Image", ImVec2(200, 60))) {
       const char *base = SDL_GetBasePath();

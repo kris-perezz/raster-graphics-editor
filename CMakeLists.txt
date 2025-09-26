@@ -20,7 +20,7 @@ if(SDL_VENDORED)
   FetchContent_Declare(
       SDL3
       GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-      GIT_TAG origin/main
+      GIT_TAG release-3.2.22
       OVERRIDE_FIND_PACKAGE
   )
   set(SDL_SHARED OFF)
@@ -48,7 +48,8 @@ set(RAGE_HEADER
     src/GUI.h
     src/Renderer.h
     src/CanvasState.h
-    src/Style.h)
+    src/Style.h
+    src/GUICommands.h)
 
 
 set(RAGE_SOURCE
@@ -57,7 +58,8 @@ set(RAGE_SOURCE
     src/Application.cpp
     src/GUI.cpp
     src/Renderer.cpp
-    src/Style.cpp)
+    src/Style.cpp
+    src/GUICommands.cpp)
 
 add_subdirectory(include/glad)
 add_subdirectory(include/imgui)
@@ -92,6 +94,14 @@ add_executable(DEMO src/imgui_demo.cpp)
 
 target_link_libraries(RAGE PRIVATE RAGE_Engine)
 target_link_libraries(DEMO PRIVATE RAGE_Engine)
+
+if (WIN32)
+  set_target_properties(RAGE PROPERTIES WIN32_EXECUTABLE TRUE)
+
+    target_link_options(RAGE PRIVATE /ENTRY:mainCRTStartup)
+
+endif()
+
 
 if(WIN32)
   foreach(exe RAGE DEMO)

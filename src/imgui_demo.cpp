@@ -13,6 +13,8 @@
 
 #include <glad/gl.h>
 
+#include <Style.h>
+
 // Main code
 int main(int, char **) {
   // Setup SDL
@@ -66,13 +68,15 @@ int main(int, char **) {
   (void)io;
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
   // ImGui::StyleColorsLight();
 
   // Setup scaling
-  ImGuiStyle &style = ImGui::GetStyle();
+  ImGuiStyle &style = ImGui::GetStyle();\
+  RAGE::styleSetup4();
   style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for
                                    // dynamic style scaling, changing this requires resetting
                                    // Style + calling this again)

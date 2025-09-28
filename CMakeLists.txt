@@ -49,7 +49,8 @@ set(RAGE_HEADER
     src/Renderer.h
     src/CanvasState.h
     src/Style.h
-    src/GUICommands.h)
+    src/GUICommands.h
+    src/Window.h)
 
 
 set(RAGE_SOURCE
@@ -59,7 +60,8 @@ set(RAGE_SOURCE
     src/GUI.cpp
     src/Renderer.cpp
     src/Style.cpp
-    src/GUICommands.cpp)
+    src/GUICommands.cpp
+    src/Window.cpp)
 
 add_subdirectory(include/glad)
 add_subdirectory(include/imgui)

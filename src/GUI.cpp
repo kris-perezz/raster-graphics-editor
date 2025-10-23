@@ -1,9 +1,13 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
+
+#include "imgui.h"
 #include <ImGuiFileDialog/ImGuiFileDialog.h>
 #include <src/GUI.h>
 #include <src/Style.h>
 
 namespace RAGE {
-GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion, uint32_t texture)
+GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion,
+         uint32_t texture)
     : m_texture(texture) {
 
   IMGUI_CHECKVERSION();
@@ -19,7 +23,7 @@ GUI::GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char 
   // io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
   // Setup Dear ImGui style
-  //ImGui::StyleColorsDark();
+  // ImGui::StyleColorsDark();
 
   ImGuiStyle &style = ImGui::GetStyle();
   styleSetup4();
@@ -53,13 +57,14 @@ void GUI::render(CanvasState &state, uint32_t texture) {
   ImGui::SetNextWindowSize(m_viewport->Size);
   ImGui::SetNextWindowViewport(m_viewport->ID);
 
-  ImGuiWindowFlags host_window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-                                       ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-                                       ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
-                                       ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+  ImGuiWindowFlags host_window_flags =
+      ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+      ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
   ImGui::Begin("MainDockSpace", nullptr,
-               ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+               ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+                   ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
                    ImGuiWindowFlags_NoNavFocus);
 
   ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
@@ -77,11 +82,12 @@ void GUI::render(CanvasState &state, uint32_t texture) {
 
     ImGuiID dock_main_id = dockspace_id;
     ImGuiID dock_left, dock_right;
-    dock_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.25f, nullptr, &dock_main_id);
-    dock_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
+    dock_left =
+        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.25f, nullptr, &dock_main_id);
+    dock_right =
+        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
 
     ImGui::DockBuilderDockWindow("Canvas", dock_main_id);
-    ImGui::DockBuilderDockWindow("Debug", dock_right);
     ImGui::DockBuilderDockWindow("Raster Graphics Editor", dock_left);
 
     ImGui::DockBuilderFinish(dockspace_id);
@@ -92,10 +98,23 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
     ImGui::Begin("Canvas", nullptr,
-                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
+                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
+                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
+                     ImGuiWindowFlags_NoMove);
 
-    ImGui::Image((void *)(intptr_t)m_texture, state.canvasSize);
+    ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
+    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+    ImVec2 canvasSize = state.canvasSize;
+
+    ImVec2 offset = ImVec2((contentRegionAvailable.x - canvasSize.x) * 0.5f,
+                           (contentRegionAvailable.y - canvasSize.y) * 0.5f);
+
+    if (offset.x >= 0 && offset.y >= 0) {
+      ImGui::SetCursorPos(ImVec2(offset.x, offset.y));
+    }
+
+    ImGui::Image((void *)(intptr_t)m_texture, canvasSize);
 
     bool onCanvas = ImGui::IsItemHovered();
     bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
@@ -114,32 +133,6 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::PopStyleVar();
   }
   {
-    // ImGui::SetNextWindowPos(ImVec2(0, 512), ImGuiCond_Once);
-    ImGui::Begin("Debug");
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
-
-    if (ImGui::IsMousePosValid())
-      ImGui::Text("Mouse pos: (%g, %g)", io->MousePos.x, io->MousePos.y);
-    else
-      ImGui::Text("Mouse pos: <INVALID>");
-    ImGui::Text("Mouse delta: (%g, %g)", io->MouseDelta.x, io->MouseDelta.y);
-    ImGui::Text("Mouse down:");
-    for (int i = 0; i < IM_ARRAYSIZE(io->MouseDown); i++)
-      if (ImGui::IsMouseDown(i)) {
-        ImGui::SameLine();
-        ImGui::Text("b%d (%.02f secs)", i, io->MouseDownDuration[i]);
-      }
-    ImGui::Text("Mouse wheel: %.1f", io->MouseWheel);
-    ImGui::Text("io->WantCaptureMouse: %d", io->WantCaptureMouse);
-    ImGui::Text("io->WantCaptureMouseUnlessPopupClose: %d", io->WantCaptureMouseUnlessPopupClose);
-    ImGui::Text("io->WantCaptureKeyboard: %d", io->WantCaptureKeyboard);
-    ImGui::Text("io->WantTextInput: %d", io->WantTextInput);
-    ImGui::Text("io->WantSetMousePos: %d", io->WantSetMousePos);
-    ImGui::Text("io->NavActive: %d, io->NavVisible: %d", io->NavActive, io->NavVisible);
-
-    ImGui::End();
-  }
-  {
     // ImGui::SetNextWindowPos(ImVec2(512, 0), ImGuiCond_Once);
     // ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_Once);
     ImGui::Begin("Raster Graphics Editor"); // Create a window called Raster
@@ -152,7 +145,8 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    ImGui::ColorPicker4("Canvas Colour", (float *)&state.canvasColour, base_flags | ImGuiColorEditFlags_DisplayRGB);
+    ImGui::ColorPicker4("Canvas Colour", (float *)&state.canvasColour,
+                        base_flags | ImGuiColorEditFlags_DisplayRGB);
 
     if (ImGui::Button("Clear Canvas", ImVec2(200, 60))) {
       state.clear = true;
@@ -162,12 +156,12 @@ void GUI::render(CanvasState &state, uint32_t texture) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    ImGui::ColorPicker4("Brush Colour", (float *)&state.brushColour, base_flags | ImGuiColorEditFlags_DisplayRGB);
+    ImGui::ColorPicker4("Brush Colour", (float *)&state.brushColour,
+                        base_flags | ImGuiColorEditFlags_DisplayRGB);
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::Spacing();
 
-    
     ImGui::DragFloat("Brush Size", &state.brushSize, 1.0f, 0.0f, 100.0f);
 
     if (ImGui::Button("Save Image", ImVec2(200, 60))) {
@@ -197,14 +191,16 @@ void GUI::render(CanvasState &state, uint32_t texture) {
         ImGui::EndPopup();
       }
     }
+    ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
     ImGui::End();
   }
   {
     ImVec2 minDialogueSize(m_viewport->Size.x * 0.8, m_viewport->Size.y * 0.4);
     ImVec2 maxDialogueSize(m_viewport->Size.x * 0.8, m_viewport->Size.y * 0.8);
 
-    if (ImGuiFileDialog::Instance()->Display("SavePNGDlg", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking,
-                                             minDialogueSize, maxDialogueSize)) {
+    if (ImGuiFileDialog::Instance()->Display(
+            "SavePNGDlg", ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking, minDialogueSize,
+            maxDialogueSize)) {
       if (ImGuiFileDialog::Instance()->IsOk()) {
         state.pendingSavePath = ImGuiFileDialog::Instance()->GetFilePathName();
         state.save = true;

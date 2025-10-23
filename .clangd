@@ -1,0 +1,56 @@
+CompileFlags:
+  Add: [-std=c++23, -Wall, -Wextra, -Wpedantic]
+  Remove: [ "-Winvalid-pch", "-Xclang", "-emit-pch", "-include", "cmake_pch.hxx", ".pch", -fmodules-ts, -fmodule-mapper*, -fdeps-format=p1689r5 ]
+  Compiler: g++
+
+Index:
+  Background: Build
+  StandardLibrary: Yes
+  External: None # don’t persistently index vendored deps
+
+Diagnostics:
+  # Silence clang-tidy + warnings in vendor libraries
+  Suppress:
+    - ".*imgui.*"
+    - ".*ImGuiFileDialog.*"
+    - ".*glm.*"
+    - ".*spdlog.*"
+    - ".*stb.*"
+    - ".*glad.*"
+    - "-Wunused-parameter"
+
+  ClangTidy:
+    Add: [modernize-*, bugprone-*, readability-*, performance-*]
+    Remove:
+      [
+        modernize-use-trailing-return-type,
+        modernize-use-nodiscard,
+        readability-identifier-length,
+        readability-identifier-naming,
+        readability-implicit-bool-conversion,
+        readability-magic-numbers,
+        readability-uppercase-literal-suffix,
+        readability-make-member-function-const,
+        readability-convert-member-functions-to-static,
+        bugprone-easily-swappable-parameters,
+        modernize-use-designated-initializers
+      ]
+    FastCheckFilter: Strict
+
+  UnusedIncludes: Strict
+  MissingIncludes: None # don’t complain if headers come transitively
+  Includes:
+    IgnoreHeader: []
+
+InlayHints:
+  Enabled: false
+
+Hover:
+  ShowAKA: true
+
+SemanticTokens:
+  DisabledKinds: []
+  DisabledModifiers: []
+
+Completion:
+  AllScopes: true

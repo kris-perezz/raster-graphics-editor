@@ -53,7 +53,7 @@ Application::Application(const std::string &Application) {
   std::string fPath = std::string(base) + "data/basic.frag";
   m_shader = std::make_shared<Shader>(vPath.c_str(), fPath.c_str());
 
-  state.canvasSize = {512, 512};
+  state.canvasSize = {1024, 1024};
   m_renderer = std::make_unique<Renderer>(m_window, m_shader, m_texture, state);
   m_GUI = std::make_unique<GUI>(m_window, m_context, m_mainScale, m_glslVersion, m_renderer->texture());
 

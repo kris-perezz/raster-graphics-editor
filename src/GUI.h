@@ -15,15 +15,18 @@ public:
   bool quitRequest = false;
   bool quitConfirmed = false;
 
-  GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion,
-      uint32_t texture);
+  GUI(SDL_Window *window, SDL_GLContext context, float mainScale, const char *glslVersion, uint32_t texture);
   ~GUI();
 
   void render(CanvasState &state, uint32_t texture);
 
   void draw();
+  const ImVec2 &lastCanvasScreenPos() const { return m_lastCanvasPos; }
+  const ImVec2 &lastCanvasScreenSize() const { return m_lastCanvasSize; }
 
 private:
+  ImVec2 m_lastCanvasPos;
+  ImVec2 m_lastCanvasSize;
   uint32_t m_texture;
 
   ImGuiIO *io;

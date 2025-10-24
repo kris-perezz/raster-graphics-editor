@@ -1,9 +1,10 @@
 #pragma once
 
-#include <stb/stb_image_write.h>
 #include <src/CanvasState.h>
 #include <src/RAGE_pch.h>
 #include <src/Shader.h>
+#include <stb/stb_image_write.h>
+
 
 namespace RAGE {
 
@@ -18,6 +19,9 @@ public:
   void clearCanvas(CanvasState &state);
   void saveImage(CanvasState &state);
   uint32_t texture() const { return m_texture; }
+  void renderBrushPreview(const CanvasState &state,
+                        const ImVec2 &canvasScreenPos,
+                        const ImVec2 &canvasScreenSize);
 
 private:
   uint32_t m_texture;

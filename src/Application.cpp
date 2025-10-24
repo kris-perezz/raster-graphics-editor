@@ -24,8 +24,7 @@ Application::Application(const std::string &Application) {
 
   m_mainScale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
 
-  SDL_WindowFlags window_flags =
-      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN ;
+  SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
 
   m_window = SDL_CreateWindow(Application.c_str(), (int)(1280 * m_mainScale), (int)(720 * m_mainScale), window_flags);
 
@@ -84,8 +83,7 @@ void Application::run() {
         if (isFullscreen) {
           SDL_SetWindowFullscreen(m_window, false);
           SDL_RestoreWindow(m_window);
-        } 
-        else {
+        } else {
           SDL_SetWindowFullscreen(m_window, true);
         }
         SDL_SyncWindow(m_window);
@@ -101,14 +99,19 @@ void Application::run() {
 
     m_GUI->render(state, m_renderer->texture());
     if (m_GUI->quitConfirmed) {
-        done = true;
+      done = true;
     }
     m_renderer->setClearColour(state);
     m_renderer->clear();
     m_renderer->clearCanvas(state);
     m_renderer->renderCanvas(state);
     m_renderer->saveImage(state);
+
     m_GUI->draw();
+    
+    if (!state.draw) {
+      m_renderer->renderBrushPreview(state, m_GUI->lastCanvasScreenPos(), m_GUI->lastCanvasScreenSize());
+    }
 
     SDL_GL_SwapWindow(m_window);
   }

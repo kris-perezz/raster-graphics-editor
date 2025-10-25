@@ -40,6 +40,15 @@ FetchContent_MakeAvailable(glm)
 
 find_package(OpenGL REQUIRED)
 
+FetchContent_Declare(
+  glad
+  GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+  GIT_TAG 73db193f853e2ee079bf3ca8a64aa2eaf6459043 # v2.0.8
+  GIT_PROGRESS TRUE
+  SOURCE_SUBDIR cmake)
+FetchContent_MakeAvailable(glad)
+glad_add_library(glad_gl_core_46 STATIC REPRODUCIBLE LOADER API gl:core=4.6)
+
 set(RAGE_HEADER 
     src/main.h
     src/Shader.h
@@ -63,7 +72,7 @@ set(RAGE_SOURCE
     src/GUICommands.cpp
     src/Window.cpp)
 
-add_subdirectory(include/glad)
+
 add_subdirectory(include/imgui)
 add_subdirectory(include/stb)
 add_subdirectory(include/ImGuiFileDialog)
@@ -82,7 +91,7 @@ target_include_directories(
 
 target_link_libraries(
   RAGE_Engine 
-  glad
+  glad_gl_core_46
   glm
   imgui
   ImGuiFileDialog
